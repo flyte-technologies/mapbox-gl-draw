@@ -41,7 +41,8 @@
     "mapbox-gl-js-mock": "^0.15.0",
     "mock-browser": "^0.92.10",
     "tape": "^4.0.0",
-    "uglify-js": "^2.4.23"
+    "uglify-js": "^2.4.23",
+    "mapbox-gl": "https://github.com/mapbox/mapbox-gl-js/tarball/a957acdb16952dbea30bf8d000480e7888578772"
   },
   "peerDependencies": {
     "mapbox-gl": "^0.13.1 || ^0.14.0 || ^0.15.0"

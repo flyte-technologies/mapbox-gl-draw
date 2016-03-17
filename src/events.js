@@ -1,5 +1,4 @@
 var ModeHandler = require('./modes/mode_handler');
-console.log('events require manySelect', typeof manySelect);
 var findTargetAt = require('./lib/find_target_at');
 
 var modes = {
@@ -19,6 +18,31 @@ module.exports = function(ctx) {
   var events = {};
   var currentMode = ModeHandler(modes['many_select'](ctx));
 
+  var targetFeture = undefined;
+  var lastPos = undefined;
+  var running = false;
+
+  var eventStack = [];
+
+  var emit = function() {
+    if (!running) {
+      running = true;
+      var next = eventStack.pop();
+      if (next[2]) {
+        findTargetAt(next[1], ctx, function(err, target) {
+          if (err) {
+
+          }
+        });
+      }
+    }
+  }
+
+  var next = function(name, event, needsFeature) {
+    eventStack = [[name, event, needsFeature]].concat(eventStack);
+    emit();
+  }
+
   events.drag = function(event) {
     currentMode.drag(event);
   };
@@ -36,6 +60,8 @@ module.exports = function(ctx) {
       currentMode.doubleclick(event);
     });
   };
+
+  var dragFeatureState = 'none';
 
   events.mousemove  = function(event) {
     if (isDown) {

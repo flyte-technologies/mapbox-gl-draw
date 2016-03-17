@@ -76,7 +76,7 @@ Polygon.prototype.getCoordinates = function() {
 }
 
 Polygon.prototype.getSourceFeatures = function() {
-  var geojson = rewind(this.internalGeoJSON(), true);
+  var geojson = this.internalGeoJSON();
   var midpoints = [];
   var vertices = [];
 
@@ -98,7 +98,8 @@ Polygon.prototype.getSourceFeatures = function() {
     }
   }
 
-  return [geojson].concat(midpoints).concat(vertices);
+  // we could rewind once if we did it at the start.
+  return [rewind(geojson, true)].concat(midpoints).concat(vertices);
 }
 
 module.exports = Polygon;

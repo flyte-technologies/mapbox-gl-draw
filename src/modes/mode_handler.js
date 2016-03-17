@@ -16,6 +16,9 @@ var ModeHandler = function(mode, onStop) {
 
   var ctx = {
     on: function(event, selector, fn) {
+      if (handlers[event] === undefined) {
+        throw new Error(`Invalid event type: ${event}`);
+      }
       handlers[event].push({
         selector: selector,
         fn: fn
