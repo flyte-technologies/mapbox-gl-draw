@@ -26,64 +26,7 @@ interactive | boolean | Keep all features permanently in selected mode - default
 keybindings | boolean | Keyboard shortcuts for drawing - default: `true`
 displayControlsDefault | boolean | Sets default value for the control keys in the control option - default `true`
 controls | Object | Lets you hide or show individual controls. See `displayControlsDefault` for default. Available options are: point, line, polygon and trash.
-style | Object | An array of style objects (as described below) - default: see default style.
-
-### Styling Draw
-
-Draw is styled by the [Mapbox GL Style Spec](https://www.mapbox.com/mapbox-gl-style-spec/) with a preset list of properties.
-
-The `GL Style Spec` requires each layer to have a source. **DO NOT PROVIDE THIS** for styling draw.
-
-Draw moves features between sources for performence gains, because of this it is recommeneded that you **DO NOT** provide a source for a stlye despite the fact the `GL Style Spec` requires a source. **Draw will provide the source for you automaticlly**.
-
-If you need to stlye gl-draw for debugging sources the source names are `mapbox-gl-draw_hot` and `mapbox-gl-draw_cold`.
-
-property | values | function
---- | --- | ---
-meta | feature, midpoint, vertex, too-small, too-big | `midpoint` and `vertex` are used on points added to the map to communicate polygon and line handles. `feature` is used for all features added by the user. `too-small` is used to indicate a point that represents the center of a collection of features that are too small at the current zoom level to be seen. `too-big` is used to exclude features from rendering. You can style these features like `meta=feature` to force them to show.
-active | true, false | A feature is active when it is 'selected' in the current mode. `true` and `false` are strings.
-mode |  default, direct_select, draw_point, draw_line_string, draw_polygon | Indicates which mode Draw is currently in.
-count | number | This is only present when `meta` is `too-small`. It represents the number of features this one feature represents.
-hover | true, false | `true` and `false` are strings. `hover` is true when the mouse is over the feature.
-
-Draw also provides a few more properties, but they should not be used for styling. For details on them, see `Using Draw with map.queryRenderFeatures`.
-
-#### Example Custom Style
-
-With this style all Point features are blue and have a black halo when active. No other features are rendered, even if they are present.
-
-```js
-mapbox.Draw({
-  style: [
-    {
-      'id': 'highlight-active-points',
-      'type': 'circle',
-      'filter': ['all',
-        ['==', '$type', 'Point'],
-        ['==', 'meta', 'feature'],
-        ['==', 'active', 'true']],
-      'paint': {
-        'circle-radius': 7,
-        'circle-color': '#000000'
-      },
-      'interactive': true
-    },
-    {
-      'id': 'points-are-blue',
-      'type': 'circle',
-      'filter': ['all',
-        ['==', '$type', 'Point'],
-        ['==', 'meta', 'feature'],
-        ['==', 'active', 'true']],
-      'paint': {
-        'circle-radius': 5,
-        'circle-color': '#000088'
-      },
-      'interactive': true
-    }
-  ]
-});
-```
+style | Object | An array of style objects. By default draw provides a style for you. To override this see [Styling Draw](#styling-draw) further down.
 
 ## API Methods
 
@@ -242,21 +185,100 @@ The three draw modes work identically. They do not take an options argument.
 
 Draw fires off a number of events on draw and select actions. All of these events are name spaced `draw` inside of the mapboxgl event emitter.
 
-### draw.set
+### draw.change_mode
 
-This is fired every time a feature is committed via escape or the double click. The payload is an object with the `mapbox-gl-draw` feature id and the GeoJSON representation of the feature.
+This event is fired just after the current mode is stopped and just before the next mode is started.If the `new` object provided is changed, the changed values will be used to start the next mode.
+
+This is not fired when the first mode is started.
+
+Here is an example payload.
+
+```js
+{
+  old: {
+    mode: `default`,
+    options: []
+  },
+  new: {
+    mode: `direct_select`
+    options: '123123123'
+  }
+}
+```
 
 ### draw.delete
 
-This is fired every time a feature is deleted inside of `mapbox-gl-draw`. The payload is an object with the `mapbox-gl-draw` feature id of the feature that was deleted and the GeoJSON representation of the feature just before it was deleted.
+This is fired every time a feature is deleted inside of `mapbox-gl-draw`. The payload is the GeoJSON feature just before it was deleted.
 
-### draw.select.start
+### draw.active
 
-Fired every time a feature is selected. The payload is an object with the `mapbox-gl-draw` feature id and the GeoJSON representation of the feature.
+This is fired every time a feature is set to active or inactive. If a feature was active and is then set to active again, this is not fired. Same goes for inactive. This is only fired for features. Not for verticeies.
 
-### draw.select.end
+Here is an example payload.
 
-Fired every time a feature is deselected. The payload is an object with the `mapbox-gl-draw` feature id.
+```js
+{
+  active: false,
+  featureId: '123123123'
+}
+```
+
+## Styling Draw
+
+Draw is styled by the [Mapbox GL Style Spec](https://www.mapbox.com/mapbox-gl-style-spec/) with a preset list of properties.
+
+The `GL Style Spec` requires each layer to have a source. **DO NOT PROVIDE THIS** for styling draw.
+
+Draw moves features between sources for performence gains, because of this it is recommeneded that you **DO NOT** provide a source for a stlye despite the fact the `GL Style Spec` requires a source. **Draw will provide the source for you automaticlly**.
+
+If you need to stlye gl-draw for debugging sources the source names are `mapbox-gl-draw_hot` and `mapbox-gl-draw_cold`.
+
+property | values | function
+--- | --- | ---
+meta | feature, midpoint, vertex, too-small, too-big | `midpoint` and `vertex` are used on points added to the map to communicate polygon and line handles. `feature` is used for all features added by the user. `too-small` is used to indicate a point that represents the center of a collection of features that are too small at the current zoom level to be seen. `too-big` is used to exclude features from rendering. You can style these features like `meta=feature` to force them to show.
+active | true, false | A feature is active when it is 'selected' in the current mode. `true` and `false` are strings.
+mode |  default, direct_select, draw_point, draw_line_string, draw_polygon | Indicates which mode Draw is currently in.
+count | number | This is only present when `meta` is `too-small`. It represents the number of features this one feature represents.
+hover | true, false | `true` and `false` are strings. `hover` is true when the mouse is over the feature.
+
+Draw also provides a few more properties, but they should not be used for styling. For details on them, see `Using Draw with map.queryRenderFeatures`.
+
+### Example Custom Style
+
+With this style all Point features are blue and have a black halo when active. No other features are rendered, even if they are present.
+
+```js
+mapbox.Draw({
+  style: [
+    {
+      'id': 'highlight-active-points',
+      'type': 'circle',
+      'filter': ['all',
+        ['==', '$type', 'Point'],
+        ['==', 'meta', 'feature'],
+        ['==', 'active', 'true']],
+      'paint': {
+        'circle-radius': 7,
+        'circle-color': '#000000'
+      },
+      'interactive': true
+    },
+    {
+      'id': 'points-are-blue',
+      'type': 'circle',
+      'filter': ['all',
+        ['==', '$type', 'Point'],
+        ['==', 'meta', 'feature'],
+        ['==', 'active', 'true']],
+      'paint': {
+        'circle-radius': 5,
+        'circle-color': '#000088'
+      },
+      'interactive': true
+    }
+  ]
+});
+```
 
 ## Using Draw with `map.queryRenderFeatures`
 
