@@ -44,6 +44,7 @@ meta | feature, midpoint, vertex, too-small, too-big | `midpoint` and `vertex` a
 active | true, false | A feature is active when it is 'selected' in the current mode. `true` and `false` are strings.
 mode |  default, direct_select, draw_point, draw_line, draw_polygon | Indicates which mode Draw is currently in.
 count | number | This is only present when `meta` is `too-small`. It represents the number of features this one feature represents.
+hover | true, false | `true` and `false` are strings. `hover` is true when the mouse is over the feature.
 
 Draw also provides a few more properties, but they should not be used for styling. For details on them, see `Using Draw with map.queryRenderFeatures`.
 
@@ -55,20 +56,33 @@ With this style all Point features are blue and have a black halo when active. N
 mapbox.Draw({
   style: [
     {
+      'id': 'highlight-active-points',
+      'type': 'circle',
+      'filter': ['all',
+        ['==', '$type', 'Point'],
+        ['==', 'meta', 'feature'],
+        ['==', 'active', 'true']],
+      'paint': {
+        'circle-radius': 7,
+        'circle-color': '#000000'
+      },
+      'interactive': true
+    },
+    {
       'id': 'points-are-blue',
       'type': 'circle',
       'filter': ['all',
         ['==', '$type', 'Point'],
         ['==', 'meta', 'feature'],
-        ['==', 'selected', 'true']],
+        ['==', 'active', 'true']],
       'paint': {
-        'circle-radius': 7,
-        'circle-color': '#ff0000'
+        'circle-radius': 5,
+        'circle-color': '#000088'
       },
       'interactive': true
     }
   ]
-})
+});
 ```
 
 ## API Methods
