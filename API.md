@@ -156,9 +156,9 @@ This is different from `delete` or `deleteAlll` in that it follows rules describ
 
 ---
 
-### `.startMode(String: mode, ?Any: options) -> Draw`
+### `.changeMode(String: mode, ?Any: options) -> Draw`
 
-`startMode` triggers the mode switching process inside Draw. `mode` must be one of the below strings. Each mode takes its own arguments. They are descibed in detail below.
+`changeMode` triggers the mode switching process inside Draw. `mode` must be one of the below strings. Each mode takes its own arguments. They are descibed in detail below.
 
 #### Mode: `default`
 
@@ -168,7 +168,7 @@ For `default` options is an array of featureIds. It is optional. If provided, th
 
 #### Mode: `direct_select`
 
-Lets you select, delete and drag features.
+Lets you select, delete and drag vertices.
 
 For `direct_select`options is a single featureId. It is required. This feature will be active for the duration of the mode.
 
