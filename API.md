@@ -34,7 +34,7 @@ style | Object | An array of style objects. By default draw provides a style for
 
 ###`.add(Object: GeoJSONFeature) -> String`
 
-This method takes any valid GeoJSON and adds it to Draw. The object will be turned into a GeoJSON feature and will be assigned a unique `drawId` that can be used to identify it. This method return the new feature's `drawId`. If an id is provided with the feature that ID will be used.
+This method takes any valid GeoJSON and adds it to Draw. The object will be turned into a GeoJSON feature and will be assigned a unique `id that can be used to identify it. This method return  `feature.id`. If an id is provided with the feature that ID will be used.
 
 Draw does not enforce unique IDs to be passed to `.add`, but it does enforce unique ids inside of it. This means that if you provide an id for a feature that is not unqiue, Draw will override the exhisting feature with your new feature. You can think of this like PUT in http verbs.
 
@@ -60,9 +60,9 @@ console.log(Draw.get('unique-id'));
 ```
 
 ---
-###`.get(String: drawId) -> Object`
+###`.get(String: feature.id) -> Object`
 
-This method takes the `drawId` of a feature and returns its GeoJSON object.
+This method takes the `feature.id` of a feature and returns its GeoJSON object.
 
 Example:
 
@@ -113,10 +113,9 @@ console.log(Draw.getAll());
 ```
 ---
 
+###`.delete(String: feature.id) -> Draw`
 
-###`.delete(String: drawId) -> Draw`
-
-This method takes the `drawId` of feature and removes it from draw.
+This method takes the `feature.id` of feature and removes it from draw.
 
 In `direct_select` mode, deleting the active feature will stop the mode and revert to the `default` mode.
 
