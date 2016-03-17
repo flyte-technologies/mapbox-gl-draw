@@ -3,6 +3,8 @@ var Feature =  require('./feature');
 var toMidpoint = require('../lib/to_midpoint');
 var toVertex = require('../lib/to_vertex');
 
+var rewind = require('geojson-rewind');
+
 var Polygon = function(ctx, geojson) {
   Feature.call(this, ctx, geojson);
   this.coordinates = this.coordinates.map(coords => coords.slice(0, -1));
@@ -74,7 +76,7 @@ Polygon.prototype.getCoordinates = function() {
 }
 
 Polygon.prototype.getSourceFeatures = function() {
-  var geojson = this.internalGeoJSON();
+  var geojson = rewind(this.internalGeoJSON(), true);
   var midpoints = [];
   var vertices = [];
 
