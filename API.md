@@ -42,7 +42,7 @@ property | values | function
 --- | --- | ---
 meta | feature, midpoint, vertex, too-small, too-big | `midpoint` and `vertex` are used on points added to the map to communicate polygon and line handles. `feature` is used for all features added by the user. `too-small` is used to indicate a point that represents the center of a collection of features that are too small at the current zoom level to be seen. `too-big` is used to exclude features from rendering. You can style these features like `meta=feature` to force them to show.
 active | true, false | A feature is active when it is 'selected' in the current mode. `true` and `false` are strings.
-mode |  default, direct_select, draw_point, draw_line, draw_polygon | Indicates which mode Draw is currently in.
+mode |  default, direct_select, draw_point, draw_line_string, draw_polygon | Indicates which mode Draw is currently in.
 count | number | This is only present when `meta` is `too-small`. It represents the number of features this one feature represents.
 hover | true, false | `true` and `false` are strings. `hover` is true when the mouse is over the feature.
 
@@ -89,11 +89,9 @@ mapbox.Draw({
 
 `mapboxgl.Draw()` returns an instance of the `Draw` class which has the following public API methods for getting and setting data:
 
-###`.add(Object: GeoJSONFeature, [Object]: options) -> String`
+###`.add(Object: GeoJSONFeature) -> String`
 
 This method takes any valid GeoJSON and adds it to Draw. The object will be turned into a GeoJSON feature and will be assigned a unique `drawId` that can be used to identify it. This method return the new feature's `drawId`. If an id is provided with the feature that ID will be used.
-
-The second argument is an optional options object to add information to the geometry when creating the new element. Currently the only used option is `permanent`, which, if set to true, will cause the element to ignore click events, `Draw.select(:id:)` and `Draw.selectAll()`.
 
 Draw does not enforce unique IDs to be passed to `.add`, but it does enforce unique ids inside of it. This means that if you provide an id for a feature that is not unqiue, Draw will override the exhisting feature with your new feature. You can think of this like PUT in http verbs.
 
@@ -136,7 +134,6 @@ console.log(Draw.get(id));
 
 This method returns all features added to Draw in a single GeoJSON FeatureCollection. The each feature's unique id will be found on the `id` attribute of the feature.
 
-
 Example:
 
 ```js
@@ -173,39 +170,12 @@ console.log(Draw.getAll());
 ```
 ---
 
-###`.getSelected() -> Object`
 
-Get all selected features.
+###`.delete(String: drawId) -> Draw`
 
----
+This method takes the `drawId` of feature and removes it from draw.
 
-###`.select(String: drawId) -> Draw`
-
-This method takes the `drawId` of a feature and selects it. It returns `this` to allow for method chaining.
-
----
-
-###`.selectAll() -> Draw`
-
-This method selects all features. It returns `this` to allow for method chaining.
-
----
-
-###`.deselect(String: drawId) -> Draw`
-
-This method takes the `drawId` of a feature and deselects it if selected. It returns `this` to allow for method chaining.
-
----
-
-####`.deselectAll() -> Draw`
-
-This method deselects all features. It returns `this` to allow for method chaining.
-
----
-
-###`.destroy(String: drawId) -> Draw`
-
-This method takes the `drawId` of feature and removes it from draw. It returns `this` to allow for method chaining.
+In `direct_select` mode, deleting the active feature will stop the mode and revert to the `default` mode.
 
 Example:
 
@@ -213,31 +183,14 @@ Example:
 var feature = { type: 'Point', coordinates: [0, 0] };
 var id = draw.add(feature)
 Draw
-  .destroy(id)
+  .delete(id)
   .getAll();
 // => { type: 'FeatureCollection', features: [] }
 ```
 
 ---
 
-###`.update(String: drawId, Object: GeoJSONFeature) -> Draw`
-
-This method takes the `drawId` of an existing feature and a GeoJSON object and replaces that feature in draw with the new feature. It returns `this`.
-
-Example:
-
-```js
-var id = Draw.add({ type: 'Point', coordinates: [0, 0] });
-var newFeature = Draw
-  .update(id, { type: 'Point', coordinates: [1, 1] })
-  .get(id);
-console.log(newFeature);
-//=> { type: 'Feature', geometry: { type: 'Point', coordinates: [1, 1] } }
-```
-
----
-
-###`.clear() -> Draw`
+###`.deleteAll() -> Draw`
 
 This method removes all geometries in Draw.
 
@@ -246,26 +199,44 @@ Example:
 ```js
 Draw.add({ type: 'Point', coordinates: [0, 0] });
 Draw
-  .clear()
+  .deleteAll()
   .getAll();
 // => { type: 'FeatureCollection', features: [] }
 ```
 
 ---
 
-###`.startDrawing(Enum: { Draw.types.POINT | Draw.types.LINE | Draw.types.POLYGON })`
+### `.trash() -> Draw`
 
-This method initiates drawing the specified type. The types are defined in constants in draw under `Draw.types.*`. The argument should be one of
+This envokes the current modes trash event. For the `default` mode this deletes all active features. For the `direct_select` mode this deletes the active vertecies. For the draw modes, these cancels the current process.
 
-- `Draw.types.POINT`
-- `Draw.types.LINE`
-- `Draw.types.POLYGON`
+This is different from `delete` or `deleteAlll` in that it follows rules described by the current mode.
 
-Example:
+---
 
-```js
-Draw.startDrawing(Draw.types.LINE);
-```
+### `.startMode(String: mode, ?Any: options) -> Draw`
+
+`startMode` triggers the mode switching process inside Draw. `mode` must be one of the below strings. Each mode takes its own arguments. They are descibed in detail below.
+
+#### Mode: `default`
+
+Lets you select, delete and drag features.
+
+For `default` options is an array of featureIds. It is optional. If provided, these features will be active at the start of the mode. In this mode, features can have their active state changed by the user. To control what is active, react to changes as described in the events section below.
+
+#### Mode: `direct_select`
+
+Lets you select, delete and drag features.
+
+For `direct_select`options is a single featureId. It is required. This feature will be active for the duration of the mode.
+
+#### Draw modes:
+
+The three draw modes work identically. They do not take an options argument.
+
+- `draw_line_string`: Draws a LineString feature.
+- `draw_polygon`: Draws a Polygon feature.
+- `draw_point`: Draws a Point feature.
 
 ## Events
 
