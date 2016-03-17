@@ -11,8 +11,8 @@ var Feature = function(ctx, geojson) {
     id: this.id,
     type: this.type,
     meta: 'feature',
-    selected: false,
-    direct_selected: false
+    selected: 'false',
+    direct_selected: 'false'
   }
 
   ctx.store.add(this);

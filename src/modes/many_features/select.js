@@ -30,7 +30,7 @@ module.exports = function(ctx) {
       });
 
       this.on('doubleclick', isFeatureButNotPoint, function(e) {
-
+        e.originalEvent.stopPropagation();
         ctx.events.startMode('one_select', {
           featureId: e.featureTarget.properties.id
         });

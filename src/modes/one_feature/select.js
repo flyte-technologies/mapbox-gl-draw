@@ -49,7 +49,7 @@ module.exports = function(ctx, opts) {
   return {
     start: function() {
       ctx.ui.setClass('mapbox-gl-draw_mouse-direct-select');
-      feature.drawProperties.direct_selected = true;
+      feature.drawProperties.direct_selected = 'true';
       this.on('mousedown', isOfMetaType('vertex'), onVertex);
       this.on('mousedown', isOfMetaType('midpoint'), onMidpoint);
       this.on('click', isOfMetaType('vertex'), selectVertex);
@@ -72,7 +72,7 @@ module.exports = function(ctx, opts) {
     },
     stop: function() {
       ctx.ui.clearClass();
-      feature.drawProperties.direct_selected = false;
+      feature.drawProperties.direct_selected = 'false';
     }
   }
 }

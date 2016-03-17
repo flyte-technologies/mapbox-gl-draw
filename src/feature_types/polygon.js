@@ -80,11 +80,10 @@ Polygon.prototype.getSourceFeatures = function() {
   var midpoints = [];
   var vertices = [];
 
-  console.log('woot');
-  if (this.drawProperties.direct_selected) {
+  if (this.drawProperties.direct_selected === 'true') {
     for (var i = 0; i<geojson.geometry.coordinates.length; i++) {
       var ring = geojson.geometry.coordinates[i];
-      for (var j = 0; j<ring.length; j++) {
+      for (var j = 0; j<ring.length-1; j++) {
         var coord = ring[j];
         var path = `${i}.${j}`;
         vertices.push(toVertex(this.id, coord, path, this.selectedCoords[path] || false));

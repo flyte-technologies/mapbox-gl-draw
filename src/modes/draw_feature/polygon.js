@@ -44,6 +44,7 @@ module.exports = function(ctx) {
       stopDrawingAndRemove();
     }
     else {
+      console.log(feature.coordinates);
       ctx.events.startMode('many_select');
     }
   }

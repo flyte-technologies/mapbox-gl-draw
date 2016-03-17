@@ -3,8 +3,7 @@ var Store = require('./store');
 var ui = require('./ui');
 var DOM = require('./lib/util').DOM;
 
-var drawSelectedTheme =  require('./theme/draw-selected');
-var drawTheme =  require('./theme/draw');
+var theme = require('./lib/theme');
 
 module.exports = function(ctx) {
 
@@ -54,7 +53,6 @@ module.exports = function(ctx) {
       ctx.events.removeEventListeners();
     },
     addLayers: function() {
-      console.log('addLayers', drawTheme.length);
       ctx.map.batch((batch) => {
         // drawn features style
         batch.addSource('draw', {
@@ -65,12 +63,6 @@ module.exports = function(ctx) {
           type: 'geojson'
         });
 
-        for (let i = 0; i < drawTheme.length; i++) {
-          let style = drawTheme[i];
-          Object.assign(style, ctx.options.styles[style.id] || {});
-          batch.addLayer(style);
-        }
-
         // selected features style
         batch.addSource('draw-selected', {
           data: {
@@ -80,9 +72,11 @@ module.exports = function(ctx) {
           type: 'geojson'
         });
 
-        for (let i = 0; i < drawSelectedTheme.length; i++) {
-          let style = drawSelectedTheme[i];
-          Object.assign(style, ctx.options.styles[style.id] || {});
+        for (let i = 0; i < theme.length; i++) {
+          let style = theme[i];
+          style.source = 'draw-selected';
+          // TODO: this should be on both sources...
+          // TODO: let users overwrite this...
           batch.addLayer(style);
         }
         ctx.store.render();
@@ -90,13 +84,8 @@ module.exports = function(ctx) {
     },
     removeLayers: function() {
       ctx.map.batch(function (batch) {
-        for (let i = 0; i < drawTheme.length; i++) {
-          let { id } = drawTheme[i];
-          batch.removeLayer(id);
-        }
-
-        for (let i = 0; i < drawSelectedTheme.length; i++) {
-          let { id } = drawSelectedTheme[i];
+        for (let i=0; i < theme.length; i++) {
+          let { id } = theme[i];
           batch.removeLayer(id);
         }
 

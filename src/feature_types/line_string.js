@@ -66,15 +66,17 @@ LineString.prototype.getSourceFeatures = function() {
   var midpoints = [];
   var vertices = [];
 
-  for (var i = 0; i<geojson.geometry.coordinates.length; i++) {
-    var coord = geojson.geometry.coordinates[i];
-    var path = `${i}`;
-    vertices.push(toVertex(this.id, coord, path, this.selectedCoords[path]));
+  if (this.drawProperties.direct_selected === 'true') {
+    for (var i = 0; i<geojson.geometry.coordinates.length; i++) {
+      var coord = geojson.geometry.coordinates[i];
+      var path = `${i}`;
+      vertices.push(toVertex(this.id, coord, path, this.selectedCoords[path]));
 
-    if (i > 0) {
-      var start = vertices[i-1];
-      var end = vertices[i];
-      midpoints.push(toMidpoint(this.id, start, end, this.ctx.map));
+      if (i > 0) {
+        var start = vertices[i-1];
+        var end = vertices[i];
+        midpoints.push(toMidpoint(this.id, start, end, this.ctx.map));
+      }
     }
   }
 

@@ -2,7 +2,7 @@ module.exports = function(ctx, opts) {
 
   var feature = ctx.store.get(opts.featureId);
 
-  feature.drawProperties.direct_selected = true;
+  feature.drawProperties.direct_selected = 'true';
 
   var selectedCoords = feature.getSelectedCoordinatePaths ? feature.getSelectedCoordinatePaths() : [];
   var coordPos = selectedCoords.map(path => feature.getCoordinate(path));
@@ -40,7 +40,7 @@ module.exports = function(ctx, opts) {
       });
     },
     stop: function() {
-      feature.drawProperties.direct_selected = false;
+      feature.drawProperties.direct_selected = 'false';
       ctx.ui.clearClass();
     }
   }
