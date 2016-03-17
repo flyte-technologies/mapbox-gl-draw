@@ -19,6 +19,7 @@ module.exports = function(ctx, opts) {
       });
 
       this.on('drag', () => true, function(e) {
+        e.originalEvent.stopPropagation();
         var lngD = e.lngLat.lng - opts.startPos.lng;
         var latD = e.lngLat.lat - opts.startPos.lat;
 

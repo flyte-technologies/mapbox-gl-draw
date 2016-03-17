@@ -14,7 +14,7 @@ var dist = function(a, b) {
   return Math.pow((dLng*dLng) + (dLat * dLat), .5);
 }
 
-module.exports = function(event, ctx, cb) {
+module.exports = function(event, ctx) {
 
   var sort = function(a, b) {
     var aPri = priorities[a.properties.meta];
@@ -33,21 +33,13 @@ module.exports = function(event, ctx, cb) {
     }
   }
 
-  ctx.map.featuresAt([event.point.x, event.point.y], {
-    radius: 20
-  }, function(err, features) {
-    if (err) {
-      throw error;
-    }
-    else {
-      features = features.filter(function(feature) {
-        var meta = feature.properties.meta;
-        return metas.indexOf(meta) !== -1;
-      });
+  var features = ctx.map.queryRenderedFeatures([event.point.x, event.point.y], {});
 
-      features.sort(sort);
-
-      cb(features[0]);
-    }
+  features = features.filter(function(feature) {
+    var meta = feature.properties.meta;
+    return metas.indexOf(meta) !== -1;
   });
+
+  features.sort(sort);
+  return features[0]
 }

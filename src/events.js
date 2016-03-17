@@ -18,47 +18,20 @@ module.exports = function(ctx) {
   var events = {};
   var currentMode = ModeHandler(modes['many_select'](ctx));
 
-  var targetFeture = undefined;
-  var lastPos = undefined;
-  var running = false;
-
-  var eventStack = [];
-
-  var emit = function() {
-    if (!running) {
-      running = true;
-      var next = eventStack.pop();
-      if (next[2]) {
-        findTargetAt(next[1], ctx, function(err, target) {
-          if (err) {
-
-          }
-        });
-      }
-    }
-  }
-
-  var next = function(name, event, needsFeature) {
-    eventStack = [[name, event, needsFeature]].concat(eventStack);
-    emit();
-  }
-
   events.drag = function(event) {
     currentMode.drag(event);
   };
 
   events.click = function(event) {
-    findTargetAt(event, ctx, function(target) {
-      event.featureTarget = target;
-      currentMode.click(event);
-    });
+    var target = findTargetAt(event, ctx);
+    event.featureTarget = target;
+    currentMode.click(event);
   };
 
   events.doubleclick = function(event) {
-    findTargetAt(event, ctx, function(target) {
-      event.featureTarget = target;
-      currentMode.doubleclick(event);
-    });
+    var target = findTargetAt(event, ctx);
+    event.featureTarget = target;
+    currentMode.doubleclick(event);
   };
 
   var dragFeatureState = 'none';
@@ -68,27 +41,24 @@ module.exports = function(ctx) {
       events.drag(event);
     }
     else {
-      findTargetAt(event, ctx, function(target) {
-        event.featureTarget = target;
-        currentMode.mousemove(event);
-      });
+      var target = findTargetAt(event, ctx);
+      event.featureTarget = target;
+      currentMode.mousemove(event);
     }
   };
 
   events.mousedown  = function(event) {
     isDown = true;
-    findTargetAt(event, ctx, function(target) {
-      event.featureTarget = target;
-      currentMode.mousedown(event);
-    });
+    var target = findTargetAt(event, ctx);
+    event.featureTarget = target;
+    currentMode.mousedown(event);
   };
 
   events.mouseup  = function(event) {
     isDown = false;
-    findTargetAt(event, ctx, function(target) {
-      event.featureTarget = target;
-      currentMode.mouseup(event);
-    });
+    var target = findTargetAt(event, ctx);
+    event.featureTarget = target;
+    currentMode.mouseup(event);
   };
 
   events.delete = function(event) {
