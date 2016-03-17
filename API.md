@@ -40,9 +40,9 @@ If you need to stlye gl-draw for debugging sources the source names are `mapbox-
 
 property | values | function
 --- | --- | ---
-meta | `feature`, `midpoint`, `vertex`, `too-small`, `too-big` | midpoint and vertex are used on points added to the map to communicate polygon and line handles. `feature` is used for all features added by the user. `too-small` is used to indicate a point that represents the center of a collection of features that are too small at the current zoom level to be seen. `too-big` is used to exclude features from rendering. You can style these features like `meta=feature` to force them to show.
-active | `true`, `false` | A feature is active when it is 'selected' in the current mode. `true` and `false` are strings.
-mode |  `default`, `direct_select`, `draw_point`, `draw_line`, `draw_polygon` | Indicates which mode Draw is currently in.
+meta | feature, midpoint, vertex, too-small, too-big | `midpoint` and `vertex` are used on points added to the map to communicate polygon and line handles. `feature` is used for all features added by the user. `too-small` is used to indicate a point that represents the center of a collection of features that are too small at the current zoom level to be seen. `too-big` is used to exclude features from rendering. You can style these features like `meta=feature` to force them to show.
+active | true, false | A feature is active when it is 'selected' in the current mode. `true` and `false` are strings.
+mode |  default, direct_select, draw_point, draw_line, draw_polygon | Indicates which mode Draw is currently in.
 count | number | This is only present when `meta` is `too-small`. It represents the number of features this one feature represents.
 
 Draw also provides a few more properties, but they should not be used for styling. For details on them, see `Using Draw with map.queryRenderFeatures`.
