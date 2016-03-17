@@ -28,9 +28,9 @@ displayControlsDefault | boolean | Sets default value for the control keys in th
 controls | Object | Lets you hide or show individual controls. See `displayControlsDefault` for default. Available options are: point, line, polygon and trash.
 style | Object | An array of style objects (as described below) - default: see default style.
 
-### Styling GL Draw
+### Styling Draw
 
-GL Draw is styled by the [Mapbox GL Style Spec](https://www.mapbox.com/mapbox-gl-style-spec/) with a preset list of properties.
+Draw is styled by the [Mapbox GL Style Spec](https://www.mapbox.com/mapbox-gl-style-spec/) with a preset list of properties.
 
 The `GL Style Spec` requires each layer to have a source. **DO NOT PROVIDE THIS** for styling draw.
 
@@ -40,20 +40,40 @@ If you need to stlye gl-draw for debugging sources the source names are `mapbox-
 
 property | values | function
 --- | --- | ---
-meta | `feature`, `midpoint`, `vertex` | midpoint and vertex are used on points added to the map to communicate polygon and line handles. `feature` is used for all features added by the user.
+meta | `feature`, `midpoint`, `vertex`, `too-small`, `too-big` | midpoint and vertex are used on points added to the map to communicate polygon and line handles. `feature` is used for all features added by the user. `too-small` is used to indicate a point that represents the center of a collection of features that are too small at the current zoom level to be seen. `too-big` is used to exclude features from rendering. You can style these features like `meta=feature` to force them to show.
 active | `true`, `false` | A feature is active when it is 'selected' in the current mode. `true` and `false` are strings.
 mode |  `default`, `direct_select`, `draw_point`, `draw_line`, `draw_polygon` | Indicates which mode Draw is currently in.
-id | string | only available when `meta` is `feature`
-parent | string | only avaible when `meta` is not `feature`
-coord_path | string | a `.` seporated path to one [lon, lat] entity in the parents coordinates
-lon | number | the longitude value of a handle. Only available when `meta` is ` midpoint`.
+count | number | This is only present when `meta` is `too-small`. It represents the number of features this one feature represents.
 
-**
+Draw also provides a few more properties, but they should not be used for styling. For details on them, see `Using Draw with map.queryRenderFeatures`.
 
+#### Example Custom Style
 
-`mapboxgl.Draw()` returns an instance of the `Draw` class which has the following public API methods for getting and setting data:
+With this style all Point features are blue and have a black halo when active. No other features are rendered, even if they are present.
+
+```js
+mapbox.Draw({
+  style: [
+    {
+      'id': 'points-are-blue',
+      'type': 'circle',
+      'filter': ['all',
+        ['==', '$type', 'Point'],
+        ['==', 'meta', 'feature'],
+        ['==', 'selected', 'true']],
+      'paint': {
+        'circle-radius': 7,
+        'circle-color': '#ff0000'
+      },
+      'interactive': true
+    }
+  ]
+})
+```
 
 ## API Methods
+
+`mapboxgl.Draw()` returns an instance of the `Draw` class which has the following public API methods for getting and setting data:
 
 ###`.add(Object: GeoJSONFeature, [Object]: options) -> String`
 
@@ -252,3 +272,13 @@ Fired every time a feature is selected. The payload is an object with the `mapbo
 ### draw.select.end
 
 Fired every time a feature is deselected. The payload is an object with the `mapbox-gl-draw` feature id.
+
+## Using Draw with `map.queryRenderFeatures`
+
+property | values | function
+--- | --- | ---
+id | string | only available when `meta` is `feature`
+parent | string | only avaible when `meta` is not `feature`
+coord_path | string | a `.` seporated path to one [lon, lat] entity in the parents coordinates
+lon | number | the longitude value of a handle. Only available when `meta` is ` midpoint`.
+bbox | array | the bounding box of the hidden features. Only available when `meta` is `too-small`.
