@@ -34,9 +34,9 @@ style | Object | An array of style objects. By default draw provides a style for
 
 ###`.add(Object: GeoJSONFeature) -> String`
 
-This method takes any valid GeoJSON and adds it to Draw. The object will be turned into a GeoJSON feature and will be assigned a unique `id that can be used to identify it. This method return  `feature.id`. If an id is provided with the feature that ID will be used.
+This method takes any valid GeoJSON and adds it to Draw. The object will be turned into a GeoJSON feature and will be assigned a unique `id that can be used to identify it. This method returns  `feature.id`. If an id is provided with the feature that ID will be used.
 
-Draw does not enforce unique IDs to be passed to `.add`, but it does enforce unique ids inside of it. This means that if you provide an id for a feature that is not unqiue, Draw will override the exhisting feature with your new feature. You can think of this like PUT in http verbs.
+Draw does not enforce unique IDs to be passed to `.add`, but it does enforce unique ids inside of it. This means that if you provide an id for a feature that is not unqiue, Draw will override the existing feature with your new feature. You can think of this like PUT in http verbs.
 
 If a FeatureCollection is provided to `.add` Draw will break it up into many features as if you looped through the features in the collection and added them one at a time. This is good for bulk adding, though it is no faster than looping yourself.
 
@@ -150,7 +150,7 @@ Draw
 
 ### `.trash() -> Draw`
 
-This envokes the current modes trash event. For the `default` mode this deletes all active features. For the `direct_select` mode this deletes the active vertecies. For the draw modes, these cancels the current process.
+This envokes the current modes trash event. For the `default` mode this deletes all active features. For the `direct_select` mode this deletes the active vertices. For the draw modes, these cancel the current process.
 
 This is different from `delete` or `deleteAlll` in that it follows rules described by the current mode.
 
@@ -211,7 +211,7 @@ This is fired every time a feature is deleted inside of `mapbox-gl-draw`. The pa
 
 ### draw.active
 
-This is fired every time a feature is set to active or inactive. If a feature was active and is then set to active again, this is not fired. Same goes for inactive. This is only fired for features. Not for verticeies.
+This is fired every time a feature is set to active or inactive. If a feature was active and is then set to active again, this is not fired. Same goes for inactive. This is only fired for features. Not for vertices.
 
 Here is an example payload.
 
@@ -228,9 +228,9 @@ Draw is styled by the [Mapbox GL Style Spec](https://www.mapbox.com/mapbox-gl-st
 
 The `GL Style Spec` requires each layer to have a source. **DO NOT PROVIDE THIS** for styling draw.
 
-Draw moves features between sources for performence gains, because of this it is recommeneded that you **DO NOT** provide a source for a stlye despite the fact the `GL Style Spec` requires a source. **Draw will provide the source for you automaticlly**.
+Draw moves features between sources for performance gains, because of this it is recommeneded that you **DO NOT** provide a source for a style despite the fact the `GL Style Spec` requires a source. **Draw will provide the source for you automatically**.
 
-If you need to stlye gl-draw for debugging sources the source names are `mapbox-gl-draw_hot` and `mapbox-gl-draw_cold`.
+If you need to style gl-draw for debugging sources the source names are `mapbox-gl-draw_hot` and `mapbox-gl-draw_cold`.
 
 property | values | function
 --- | --- | ---
