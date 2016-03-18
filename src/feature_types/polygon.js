@@ -1,9 +1,6 @@
 var Feature =  require('./feature');
 
-var toMidpoint = require('../lib/to_midpoint');
-var toVertex = require('../lib/to_vertex');
 
-var rewind = require('geojson-rewind');
 
 var Polygon = function(ctx, geojson) {
   Feature.call(this, ctx, geojson);

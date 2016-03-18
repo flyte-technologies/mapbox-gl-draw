@@ -1,13 +1,13 @@
-var ModeHandler = require('./modes/mode_handler');
+var ModeHandler = require('./modes/lib/mode_handler');
 var findTargetAt = require('./lib/find_target_at');
 
 var modes = {
   'default': require('./modes/default'),
-  'direct_select': require('./modes/direct_select')
+  'direct_select': require('./modes/direct_select'),
   'draw_line_string': require('./modes/draw_line_string'),
   'draw_point': require('./modes/draw_point'),
-  'draw_polygon': require('./modes/draw_polygon'),
-}
+  'draw_polygon': require('./modes/draw_polygon')
+};
 
 module.exports = function(ctx) {
 
@@ -58,8 +58,8 @@ module.exports = function(ctx) {
     currentMode.mouseup(event);
   };
 
-  events.delete = function(event) {
-    currentMode.delete(event);
+  events.trash = function() {
+    currentMode.trash();
   }
 
   events.keydown  = function(event) {

@@ -1,73 +1,110 @@
 var {noFeature, isOfMetaType, isShiftDown} = require('./lib/common_selectors');
 
+var toMidpoint = require('../lib/to_midpoint');
+var toVertex = require('../lib/to_vertex');
+
 module.exports = function(ctx, featureId) {
-
-  var isThisFeature = function(e) {
-    return e.featureTarget && e.featureTarget.properties.parent == featureId;
-  }
-
   var feature = ctx.store.get(featureId);
 
+  var dragging = false;
+  var startPos = null;
+  var coordPos = null;
+  var numCoords = null;
+
+  var selectedCoordPaths = [];
+
+
   var onVertex = function(e) {
-    if (isThisFeature(e)) {
-      var about = e.featureTarget.properties;
-      if (isShiftDown(e) === false) {
-        //ctx.api.unselectAll();
-      }
-
-      feature.selectCoordinate(about.path);
-      ctx.events.changeMode('one_drag', {
-        featureId: featureId,
-        startPos: e.lngLat
-      });
-    }
-  }
-
-  var selectVertex = function(e) {
+    dragging = true;
+    startPos = e.lngLat;
     var about = e.featureTarget.properties;
-    if (isShiftDown(e) === false && feature.selectedCoords) {
-      feature.selectedCoords = {};
+    var selectedIndex = selectedCoordPaths.indexOf(about.path);
+    if (!isShiftDown(e) && selectedIndex === -1) {
+      selectedCoordPaths = [about.path];
     }
-
-    feature.selectCoordinate(about.path);
+    else if (isShiftDown(e) && selectedIndex === -1) {
+      selectedCoordPaths.push(about.path);
+    }
   }
 
   var onMidpoint = function(e) {
+    dragging = true;
+    startPos = e.lngLat;
     var about = e.featureTarget.properties;
     feature.addCoordinate(about.path, about.lng, about.lat);
-    feature.selectCoordinate(about.path);
-    ctx.events.changeMode('one_drag', {
-      featureId: featureId,
-      startPos: e.lngLat
-    });
+    selectedCoordPaths  = [about.path];
+  }
+
+  var setupCoordPos = function() {
+    coordPos = selectedCoordPaths.map(path => feature.getCoordinate(path));
+    numCoords = coordPos.length;
   }
 
   return {
     start: function() {
       ctx.ui.setClass('mapbox-gl-draw_mouse-direct-select');
-      feature.drawProperties.direct_selected = 'true';
       this.on('mousedown', isOfMetaType('vertex'), onVertex);
       this.on('mousedown', isOfMetaType('midpoint'), onMidpoint);
-      this.on('click', isOfMetaType('vertex'), selectVertex);
+      this.on('drag', () => dragging, function(e) {
+        e.originalEvent.stopPropagation();
+        if (coordPos === null) {
+          setupCoordPos();
+        }
+        var lngChange = e.lngLat.lng - startPos.lng;
+        var latChange = e.lngLat.lat - startPos.lat;
+
+        for (var i=0; i<numCoords; i++) {
+          var path = selectedCoordPaths[i];
+          var pos = coordPos[i];
+          var lng = pos[0] + lngChange;
+          var lat = pos[1] + latChange;
+          feature.updateCoordinate(path, lng, lat);
+        }
+      });
+      this.on('mouseup', () => true, function() {
+        dragging = false;
+        coordPos = null;
+        numCoords = null;
+        startPos = null;
+      });
       this.on('doubleclick', () => true, function(e) {
+        e.originalEvent.stopPropagation();
         ctx.events.changeMode('default', [featureId]);
       });
       this.on('click', noFeature, function(e) {
-        feature.selectedCoords = {};
-        ctx.store.render();
+        selectedCoordPaths = [];
       });
       this.on('trash', function() {
-        if (feature.deleteSelectedCoords) {
-          feature.deleteSelectedCoords();
-          if (ctx.store.get(featureId) === undefined) {
-            ctx.events.changeMode('default');
-          }
+        feature.deleteCoordinates(selectedCoordPaths);
+        if (feature.isValid() === false) {
+          ctx.store.delete(id);
+          ctx.events.changeMode('default');
         }
       });
     },
     stop: function() {
       ctx.ui.clearClass();
-      feature.drawProperties.direct_selected = 'false';
+    },
+    render: function(geojson) {
+      geojson.properties.active = featureId === geojson.properties.id ? 'true' : 'false';
+      var midpoints = [];
+      var vertices = [];
+      for (var i = 0; i<geojson.geometry.coordinates.length; i++) {
+        var ring = geojson.geometry.coordinates[i];
+        for (var j = 0; j<ring.length-1; j++) {
+          var coord = ring[j];
+          var path = `${i}.${j}`;
+
+          vertices.push(toVertex(feature.id, coord, path, selectedCoordPaths.indexOf(path) > -1));
+
+          if (j > 0) {
+            var start = vertices[j-1];
+            var end = vertices[j];
+            midpoints.push(toMidpoint(feature.id, start, end, ctx.map));
+          }
+        }
+      }
+      return [geojson].concat(midpoints).concat(vertices);
     }
   }
 }

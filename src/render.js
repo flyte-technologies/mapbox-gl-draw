@@ -20,14 +20,6 @@ module.exports = function() {
       return buckets;
     }, { deselected: [], selected: [] });
 
-    if(featureBuckets.selected.length > 0) {
-      this.ctx.ui.showButton('trash');
-    }
-    else {
-      this.ctx.ui.hideButton('trash');
-    }
-
-
     this.ctx.map.getSource('draw').setData({
       type: 'FeatureCollection',
       features: featureBuckets.deselected

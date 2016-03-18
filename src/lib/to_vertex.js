@@ -6,7 +6,7 @@ module.exports = function(parent, coord, path, selected) {
         meta: 'vertex',
         parent: parent,
         path: path,
-        selected: ''+selected
+        active: ''+selected
       },
       geometry: {
         type: 'Point',

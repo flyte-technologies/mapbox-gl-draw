@@ -86,6 +86,9 @@ module.exports = function(ctx) {
         featureCoords = null;
         features = null;
         numFeatures = null;
+        Object.keys(selectedFeaturesById).forEach(id => ctx.store.delete(id));
+        selectedFeaturesById = {};
+        console.log('woot');
       });
     },
     render: function(geojson) {

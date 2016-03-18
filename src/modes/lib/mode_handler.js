@@ -9,7 +9,7 @@ var ModeHandler = function(mode, DrawContext) {
     mouseup: [],
     keydown: [],
     keyup: [],
-    delete: []
+    trash: []
   };
 
   var lastClass = '';
@@ -73,8 +73,8 @@ var ModeHandler = function(mode, DrawContext) {
     keyup: function(event) {
       delegate('keyup', event);
     },
-    delete: function(event) {
-      delegate('delete', event);
+    trash: function(event) {
+      delegate('trash', event);
     }
   }
 }
