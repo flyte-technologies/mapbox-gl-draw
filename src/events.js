@@ -1,4 +1,4 @@
-var ModeHandler = require('./modes/lib/mode_handler');
+var ModeHandler = require('./lib/mode_handler');
 var findTargetAt = require('./lib/find_target_at');
 
 var modes = {

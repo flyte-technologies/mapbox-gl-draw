@@ -1,4 +1,4 @@
-var {noFeature, isShiftDown, isFeature, isFeatureButNotPoint} = require('./lib/common_selectors');
+var {noFeature, isShiftDown, isFeature, isFeatureButNotPoint} = require('../lib/common_selectors');
 
 module.exports = function(ctx) {
 

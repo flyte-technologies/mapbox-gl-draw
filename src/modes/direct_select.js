@@ -1,4 +1,4 @@
-var {noFeature, isOfMetaType, isShiftDown} = require('./lib/common_selectors');
+var {noFeature, isOfMetaType, isShiftDown} = require('../lib/common_selectors');
 
 var toMidpoint = require('../lib/to_midpoint');
 var toVertex = require('../lib/to_vertex');

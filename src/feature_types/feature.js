@@ -7,14 +7,6 @@ var Feature = function(ctx, geojson) {
   this.id = geojson.id || hat();
   this.type = geojson.geometry.type;
 
-  this.drawProperties = {
-    id: this.id,
-    type: this.type,
-    meta: 'feature',
-    selected: 'false',
-    direct_selected: 'false'
-  }
-
   ctx.store.add(this);
 }
 

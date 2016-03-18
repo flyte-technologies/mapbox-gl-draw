@@ -1,4 +1,4 @@
-var {isEnterKey, isEscapeKey} = require('./lib/common_selectors');
+var {isEnterKey, isEscapeKey} = require('../lib/common_selectors');
 var Point = require('../feature_types/point');
 
 module.exports = function(ctx) {
