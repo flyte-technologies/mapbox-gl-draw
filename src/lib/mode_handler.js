@@ -1,4 +1,4 @@
-var ModeHandler = function(mode, onStop) {
+var ModeHandler = function(mode, DrawContext) {
 
   var handlers = {
     drag: [],
@@ -38,6 +38,7 @@ var ModeHandler = function(mode, onStop) {
       var handle = handles[iHandle];
       if (handle.selector(event)) {
         handle.fn.call(ctx, event);
+        DrawContext.store.render();
         break;
       }
     }

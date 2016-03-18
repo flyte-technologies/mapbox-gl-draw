@@ -1,16 +1,12 @@
-var {noFeature, isOfMetaType, isShiftDown} = require('../common_selectors');
+var {noFeature, isOfMetaType, isShiftDown} = require('./lib/common_selectors');
 
-module.exports = function(ctx, opts) {
-  // This mode lets you select vertexes and move them around
-  // it only lets you do this for one feature
-  // the trash can, when you are in this mode, deletes vertecies if any are selected
-  // or this single feature otherwise.
+module.exports = function(ctx, featureId) {
 
   var isThisFeature = function(e) {
-    return e.featureTarget && e.featureTarget.properties.parent == opts.featureId;
+    return e.featureTarget && e.featureTarget.properties.parent == featureId;
   }
 
-  var feature = ctx.store.get(opts.featureId);
+  var feature = ctx.store.get(featureId);
 
   var onVertex = function(e) {
     if (isThisFeature(e)) {
@@ -21,7 +17,7 @@ module.exports = function(ctx, opts) {
 
       feature.selectCoordinate(about.path);
       ctx.events.changeMode('one_drag', {
-        featureId: opts.featureId,
+        featureId: featureId,
         startPos: e.lngLat
       });
     }
@@ -41,7 +37,7 @@ module.exports = function(ctx, opts) {
     feature.addCoordinate(about.path, about.lng, about.lat);
     feature.selectCoordinate(about.path);
     ctx.events.changeMode('one_drag', {
-      featureId: opts.featureId,
+      featureId: featureId,
       startPos: e.lngLat
     });
   }
@@ -54,17 +50,16 @@ module.exports = function(ctx, opts) {
       this.on('mousedown', isOfMetaType('midpoint'), onMidpoint);
       this.on('click', isOfMetaType('vertex'), selectVertex);
       this.on('doubleclick', () => true, function(e) {
-        //ctx.api.unselectAll();
-        ctx.events.changeMode('default');
+        ctx.events.changeMode('default', [featureId]);
       });
       this.on('click', noFeature, function(e) {
         feature.selectedCoords = {};
         ctx.store.render();
       });
-      this.on('delete', function() {
+      this.on('trash', function() {
         if (feature.deleteSelectedCoords) {
           feature.deleteSelectedCoords();
-          if (ctx.store.get(opts.featureId) === undefined) {
+          if (ctx.store.get(featureId) === undefined) {
             ctx.events.changeMode('default');
           }
         }

@@ -1,5 +1,5 @@
-var {isEnterKey, isEscapeKey} = require('../common_selectors');
-var Polygon = require('../../feature_types/polygon');
+var {isEnterKey, isEscapeKey} = require('./lib/common_selectors');
+var Polygon = require('../feature_types/polygon');
 
 module.exports = function(ctx) {
 

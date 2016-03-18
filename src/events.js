@@ -2,13 +2,11 @@ var ModeHandler = require('./modes/mode_handler');
 var findTargetAt = require('./lib/find_target_at');
 
 var modes = {
-  'default': require('./modes/many_features/select'),
-  'many_drag': require('./modes/many_features/drag'),
-  'draw_line_string': require('./modes/draw_feature/line_string'),
-  'draw_point': require('./modes/draw_feature/point'),
-  'draw_polygon': require('./modes/draw_feature/polygon'),
-  'one_select': require('./modes/one_feature/select'),
-  'one_drag': require('./modes/one_feature/drag')
+  'default': require('./modes/default'),
+  'direct_select': require('./modes/direct_select')
+  'draw_line_string': require('./modes/draw_line_string'),
+  'draw_point': require('./modes/draw_point'),
+  'draw_polygon': require('./modes/draw_polygon'),
 }
 
 module.exports = function(ctx) {
@@ -17,7 +15,7 @@ module.exports = function(ctx) {
 
   var events = {};
   var currentModeName = 'default';
-  var currentMode = ModeHandler(modes['default'](ctx));
+  var currentMode = ModeHandler(modes['default'](ctx), ctx);
 
   events.drag = function(event) {
     currentMode.drag(event);
@@ -87,7 +85,7 @@ module.exports = function(ctx) {
       }
       currentModeName = modename;
       var mode = modebuilder(ctx, opts);
-      currentMode = ModeHandler(mode);
+      currentMode = ModeHandler(mode, ctx);
       ctx.store.render();
     },
     fire: function(name, event) {

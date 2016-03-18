@@ -1,5 +1,5 @@
-var {isEnterKey, isEscapeKey} = require('../common_selectors');
-var LineString = require('../../feature_types/line_string');
+var {isEnterKey, isEscapeKey} = require('./lib/common_selectors');
+var LineString = require('../feature_types/line_string');
 
 module.exports = function(ctx) {
 
