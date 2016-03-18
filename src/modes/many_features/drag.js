@@ -11,11 +11,11 @@ module.exports = function(ctx, opts) {
     start: function() {
       ctx.ui.setClass('mapbox-gl-draw_mouse-drag-features');
       if (numFeatures === 0) {
-        ctx.events.startMode('many_select');
+        ctx.events.changeMode('default');
       }
 
       this.on('mouseup', () => true, function() {
-        ctx.events.startMode('many_select');
+        ctx.events.changeMode('default');
       });
 
       this.on('drag', () => true, function(e) {

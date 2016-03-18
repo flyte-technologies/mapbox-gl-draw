@@ -15,7 +15,7 @@ module.exports = function(ctx) {
   var feature = new Polygon(ctx, geojson);
 
   var stopDrawingAndRemove = function() {
-    ctx.events.startMode('many_select');
+    ctx.events.changeMode('default');
     ctx.store.delete(feature.id);
   }
 
@@ -44,8 +44,7 @@ module.exports = function(ctx) {
       stopDrawingAndRemove();
     }
     else {
-      console.log(feature.coordinates);
-      ctx.events.startMode('many_select');
+      ctx.events.changeMode('default');
     }
   }
 
@@ -59,6 +58,34 @@ module.exports = function(ctx) {
     },
     stop: function() {
       ctx.ui.clearClass();
+    },
+    render: function(geojson) {
+      geojson.properties.active = geojson.properties.id === feature.id ? 'true' : 'false';
+
+      if (geojson.properties.active && pos == 0) {
+        var coords = [geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]];
+        geojson = {
+          'type': 'Feature',
+          'properties': geojson.properties,
+          'geometry': {
+            'coordinates': coords,
+            'type': 'Point'
+          }
+        }
+      }
+      else if (geojson.properties.active && pos == 1) {
+        var coords = [[geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]], [geojson.geometry.coordinates[0][1][0], geojson.geometry.coordinates[0][1][1]]];
+        geojson = {
+          'type': 'Feature',
+          'properties': geojson.properties,
+          'geometry': {
+            'coordinates': coords,
+            'type': 'LineString'
+          }
+        }
+      }
+
+      return geojson;
     }
   }
 }

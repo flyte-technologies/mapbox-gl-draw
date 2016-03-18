@@ -6,12 +6,4 @@ var Point = function(ctx, geojson) {
 
 Point.prototype = Object.create(Feature.prototype);
 
-Point.prototype.addCoordinate = function() {
-  throw new Error('addCoordinate cannot be called on a Point');
-}
-
-Point.prototype.selectCoordinate = function() {
-  this.select();
-}
-
 module.exports = Point;

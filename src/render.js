@@ -1,14 +1,21 @@
 module.exports = function() {
   var isStillAlive = this.ctx.map.getSource('draw') !== undefined;
   if (isStillAlive) { // checks to make sure we still have a map
+    var mode = this.ctx.events.currentModeName();
     var featureBuckets = Object.keys(this.features).reduce((buckets, id) => {
-      let sourceFeatures = this.features[id].getSourceFeatures();
+      let featureInternal = this.features[id].internal();
+      featureInternal.properties.mode = mode;
+      let modeFeatures = this.ctx.events.currentModeRender(featureInternal);
+
+      if (!Array.isArray(modeFeatures)) {
+        modeFeatures = [modeFeatures];
+      }
 
       if (true) {
-        buckets.selected = buckets.selected.concat(sourceFeatures)
+        buckets.selected = buckets.selected.concat(modeFeatures)
       }
       else {
-        buckets.deselected = buckets.deselected.concat(sourceFeatures)
+        buckets.deselected = buckets.deselected.concat(modeFeatures)
       }
       return buckets;
     }, { deselected: [], selected: [] });

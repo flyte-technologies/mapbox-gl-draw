@@ -46,6 +46,7 @@ var ModeHandler = function(mode, onStop) {
   mode.start.call(ctx);
 
   return {
+    render: mode.render || function(geojson) {return geojson; },
     stop: mode.stop || function() {},
     drag: function(event) {
       delegate('drag', event);

@@ -33,7 +33,7 @@ module.exports = function(ctx) {
         buttons[types.LINE] = createButton(controlContainer, {
           className: `${controlClass} mapbox-gl-draw_line`,
           title: `LineString tool ${ctx.options.keybindings && '(l)'}`,
-          fn: () => ctx.api.startDrawing(types.LINE)
+          fn: () => ctx.api.changeMode('draw_line_string')
         }, controlClass);
       }
 
@@ -41,7 +41,7 @@ module.exports = function(ctx) {
         buttons[types.POLYGON] = createButton(controlContainer, {
           className: `${controlClass} mapbox-gl-draw_polygon`,
           title: `Polygon tool ${ctx.options.keybindings && '(p)'}`,
-          fn: () => ctx.api.startDrawing(types.POLYGON)
+          fn: () => ctx.api.changeMode('draw_polygon')
         }, controlClass);
       }
 
@@ -49,7 +49,7 @@ module.exports = function(ctx) {
         buttons[types.POINT] = createButton(controlContainer, {
           className: `${controlClass} mapbox-gl-draw_point`,
           title: `Marker tool ${ctx.options.keybindings && '(m)'}`,
-          fn: () => ctx.api.startDrawing(types.POINT)
+          fn: () => ctx.api.changeMode('draw_point')
         }, controlClass);
       }
 
@@ -58,7 +58,7 @@ module.exports = function(ctx) {
           className: `${controlClass} mapbox-gl-draw_trash`,
           title: 'delete',
           fn: function() {
-            ctx.api.deleteSelected();
+            ctx.api.trash();
           },
         }, controlClass);
 

@@ -36,20 +36,6 @@ Feature.prototype.updateCoordinate = function(path, lng, lat) {
   this.ctx.store.render();
 }
 
-Feature.prototype.isSelected = function() {
-  return this.drawProperties.selected === 'true';
-}
-
-Feature.prototype.select = function() {
-  this.drawProperties.selected = 'true';
-  this.ctx.store.render();
-}
-
-Feature.prototype.unselect = function() {
-  this.drawProperties.selected = 'false';
-  this.ctx.store.render();
-}
-
 Feature.prototype.update = function(geojson) {
   this.userProperties = geojson.properties || this.userProperties;
   this.coordinates = geojson.coordinates || geojson.geometry.coordinates;
@@ -62,30 +48,29 @@ Feature.prototype.getCoordinates = function() {
 
 Feature.prototype.toGeoJSON = function() {
   return JSON.parse(JSON.stringify({
-    "id": this.id,
-    "type": "Feature",
-    "properties": this.userProperties,
-    "geometry": {
-      "coordinates": this.getCoordinates(),
-      "type": this.type
+    'id': this.id,
+    'type': 'Feature',
+    'properties': this.userProperties,
+    'geometry': {
+      'coordinates': this.getCoordinates(),
+      'type': this.type
     }
   }));
 }
 
-Feature.prototype.internalGeoJSON = function() {
+Feature.prototype.internal = function() {
     return {
-      "id": this.id,
-      "type": "Feature",
-      "properties": this.drawProperties,
-      "geometry": {
-        "coordinates": this.getCoordinates(),
-        "type": this.type
+      'type': 'Feature',
+      'properties': {
+        'id': this.id,
+        'meta': 'feature',
+        'active': 'false'
+      },
+      'geometry': {
+        'coordinates': this.getCoordinates(),
+        'type': this.type
       }
     }
-}
-
-Feature.prototype.getSourceFeatures = function() {
-  return [this.internalGeoJSON()];
 }
 
 module.exports = Feature;

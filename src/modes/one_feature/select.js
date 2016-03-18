@@ -16,11 +16,11 @@ module.exports = function(ctx, opts) {
     if (isThisFeature(e)) {
       var about = e.featureTarget.properties;
       if (isShiftDown(e) === false) {
-        ctx.api.unselectAll();
+        //ctx.api.unselectAll();
       }
 
       feature.selectCoordinate(about.path);
-      ctx.events.startMode('one_drag', {
+      ctx.events.changeMode('one_drag', {
         featureId: opts.featureId,
         startPos: e.lngLat
       });
@@ -40,7 +40,7 @@ module.exports = function(ctx, opts) {
     var about = e.featureTarget.properties;
     feature.addCoordinate(about.path, about.lng, about.lat);
     feature.selectCoordinate(about.path);
-    ctx.events.startMode('one_drag', {
+    ctx.events.changeMode('one_drag', {
       featureId: opts.featureId,
       startPos: e.lngLat
     });
@@ -54,8 +54,8 @@ module.exports = function(ctx, opts) {
       this.on('mousedown', isOfMetaType('midpoint'), onMidpoint);
       this.on('click', isOfMetaType('vertex'), selectVertex);
       this.on('doubleclick', () => true, function(e) {
-        ctx.api.unselectAll();
-        ctx.events.startMode('many_select');
+        //ctx.api.unselectAll();
+        ctx.events.changeMode('default');
       });
       this.on('click', noFeature, function(e) {
         feature.selectedCoords = {};
@@ -65,7 +65,7 @@ module.exports = function(ctx, opts) {
         if (feature.deleteSelectedCoords) {
           feature.deleteSelectedCoords();
           if (ctx.store.get(opts.featureId) === undefined) {
-            ctx.events.startMode('many_select');
+            ctx.events.changeMode('default');
           }
         }
       });

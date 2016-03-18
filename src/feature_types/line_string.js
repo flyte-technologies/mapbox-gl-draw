@@ -10,35 +10,6 @@ var LineString = function(ctx, geojson) {
 
 LineString.prototype = Object.create(Feature.prototype);
 
-LineString.prototype.unselect = function() {
-  this.selectedCoords = {};
-  Feature.prototype.unselect.call(this);
-}
-
-LineString.prototype.select = function() {
-  this.selectedCoords = {};
-  Feature.prototype.select.call(this);
-}
-
-LineString.prototype.selectCoordinate = function(path) {
-  this.selectedCoords[path] = true;
-}
-
-LineString.prototype.unselectCoordinate = function(path) {
-  delete this.selectedCoords[path];
-}
-
-LineString.prototype.deleteSelectedCoords = function() {
-  var selectedCoords = this.getSelectedCoordinatePaths();
-  this.ctx.store.batch(() => {
-    selectedCoords.forEach(path => this.removeCoordinate(path));
-  });
-}
-
-LineString.prototype.getSelectedCoordinatePaths = function() {
-  return Object.keys(this.selectedCoords);
-}
-
 LineString.prototype.addCoordinate = function(path, lng, lat) {
   this.selectedCoords = {};
   var id = parseInt(path, 10);

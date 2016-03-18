@@ -1,10 +1,10 @@
 module.exports = [
   {
-    'id': 'gl-draw-selected-line',
+    'id': 'gl-draw-active-line',
     'type': 'line',
     'filter': ['all',
       ['==', '$type', 'LineString'],
-      ['==', 'selected', 'true']
+      ['==', 'active', 'true']
     ],
     'layout': {
       'line-cap': 'round',
@@ -18,9 +18,9 @@ module.exports = [
     'interactive': true
   },
   {
-    'id': 'gl-draw-selected-polygon',
+    'id': 'gl-draw-active-polygon',
     'type': 'fill',
-    'filter': ['all', ['==', 'selected', 'true'], ['==', '$type', 'Polygon']],
+    'filter': ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
     'paint': {
       'fill-color': '#000000',
       'fill-opacity': 0.25
@@ -28,9 +28,9 @@ module.exports = [
     'interactive': true
   },
   {
-    'id': 'gl-draw-selected-polygon-stroke',
+    'id': 'gl-draw-active-polygon-stroke',
     'type': 'line',
-    'filter': ['all', ['==', 'selected', 'true'], ['==', '$type', 'Polygon']],
+    'filter': ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
     'layout': {
       'line-cap': 'round',
       'line-join': 'round'
@@ -43,12 +43,12 @@ module.exports = [
     'interactive': true
   },
   {
-    'id': 'gl-draw-selected-point-highlight',
+    'id': 'gl-draw-active-point-highlight',
     'type': 'circle',
     'filter': ['all',
       ['==', '$type', 'Point'],
       ['!=', 'meta', 'midpoint'],
-      ['==', 'selected', 'true']],
+      ['==', 'active', 'true']],
     'paint': {
       'circle-radius': 7,
       'circle-color': '#ff0000'
@@ -56,11 +56,11 @@ module.exports = [
     'interactive': true
   },
   {
-    'id': 'gl-draw-selected-point',
+    'id': 'gl-draw-active-point',
     'type': 'circle',
     'filter': ['all',
       ['==', '$type', 'Point'],
-      ['==', 'selected', 'true'],
+      ['==', 'active', 'true'],
       ['!=', 'meta', 'midpoint']
     ],
     'paint': {
@@ -84,7 +84,7 @@ module.exports = [
   {
     'id': 'gl-draw-polygon',
     'type': 'fill',
-    'filter': ['all', ['==', 'selected', 'false'], ['==', '$type', 'Polygon']],
+    'filter': ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon']],
     'paint': {
       'fill-color': '#ff00ff',
       'fill-outline-color': '#ff00ff',
@@ -95,7 +95,7 @@ module.exports = [
   {
     'id': 'gl-draw-polygon-stroke',
     'type': 'line',
-    'filter': ['all', ['==', 'selected', 'false'], ['==', '$type', 'Polygon']],
+    'filter': ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon']],
     'layout': {
       'line-cap': 'round',
       'line-join': 'round'
@@ -109,7 +109,7 @@ module.exports = [
   {
     'id': 'gl-draw-line',
     'type': 'line',
-    'filter': ['all', ['==', 'selected', 'false'], ['==', '$type', 'LineString']],
+    'filter': ['all', ['==', 'active', 'false'], ['==', '$type', 'LineString']],
     'layout': {
       'line-cap': 'round',
       'line-join': 'round'
@@ -123,7 +123,7 @@ module.exports = [
   {
     'id': 'gl-draw-point',
     'type': 'circle',
-    'filter': ['all', ['==', 'selected', 'false'], ['==', '$type', 'Point']],
+    'filter': ['all', ['==', 'active', 'false'], ['==', '$type', 'Point']],
     'paint': {
       'circle-radius': 5,
       'circle-color': '#ff00ff'

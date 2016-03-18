@@ -46,38 +46,6 @@ var API = module.exports = function(ctx) {
         features: ctx.store.getAll().map(feature => feature.toGeoJSON())
       }
     },
-    getSelected: function() {
-      return {
-        type: 'FeatureCollection',
-        features: ctx.store.getAll()
-        .filter(feature => feature.isSelected())
-        .map(feature => feature.toGeoJSON())
-      }
-    },
-    select: function (id) {
-    var feature = ctx.store.get(id);
-      if (feature) {
-        feature.select();
-      }
-    },
-    selectAll: function () {
-      ctx.store.getAll().forEach(feature => feature.select());
-    },
-    unselect: function (id) {
-      var feature = ctx.store.get(id);
-      if (feature) {
-        feature.unselect();
-      }
-    },
-    unselectAll: function () {
-      ctx.store.getAll().forEach(feature => feature.unselect());
-    },
-    update: function(id, geojson) {
-      var feature = ctx.store.get(id);
-      if (feature) {
-        feature.update(JSON.parse(JSON.stringify(geojson)));
-      }
-    },
     delete: function(id) {
       ctx.store.delete(id);
     },
@@ -94,9 +62,11 @@ var API = module.exports = function(ctx) {
         }
       });
     },
-    startDrawing: function (type) {
-      ctx.events.startMode(`draw_${type}`);
+    changeMode: function(mode, opts) {
+      ctx.events.changeMode(mode, opts);
+    },
+    trash: function() {
+      ctx.events.fire('trash');
     }
-
   }
 }

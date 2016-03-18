@@ -8,42 +8,11 @@ var rewind = require('geojson-rewind');
 var Polygon = function(ctx, geojson) {
   Feature.call(this, ctx, geojson);
   this.coordinates = this.coordinates.map(coords => coords.slice(0, -1));
-  this.selectedCoords = {};
 };
 
 Polygon.prototype = Object.create(Feature.prototype);
 
-Polygon.prototype.unselect = function() {
-  this.selectedCoords = {};
-  Feature.prototype.unselect.call(this);
-}
-
-Polygon.prototype.select = function() {
-  this.selectedCoords = {};
-  Feature.prototype.select.call(this);
-}
-
-Polygon.prototype.selectCoordinate = function(path) {
-  this.selectedCoords[path] = true;
-}
-
-Polygon.prototype.unselectCoordinate = function(path) {
-  delete this.selectedCoords[path];
-}
-
-Polygon.prototype.deleteSelectedCoords = function() {
-  var selectedCoords = this.getSelectedCoordinatePaths();
-  this.ctx.store.batch(() => {
-    selectedCoords.forEach(path => this.removeCoordinate(path));
-  });
-}
-
-Polygon.prototype.getSelectedCoordinatePaths = function() {
-  return Object.keys(this.selectedCoords);
-}
-
 Polygon.prototype.addCoordinate = function(path, lng, lat) {
-  this.selectedCoords = {};
   var ids = path.split('.').map(x => parseInt(x, 10));
 
   var ring = this.coordinates[ids[0]];
@@ -53,7 +22,6 @@ Polygon.prototype.addCoordinate = function(path, lng, lat) {
 }
 
 Polygon.prototype.removeCoordinate = function(path) {
-  this.selectedCoords = {};
   var ids = path.split('.').map(x => parseInt(x, 10));
   var ring = this.coordinates[ids[0]];
   if (ring) {

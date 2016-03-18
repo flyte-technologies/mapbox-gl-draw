@@ -24,7 +24,7 @@ module.exports = function(ctx, opts) {
   return {
     start: function() {
       if(numCoords === 0) {
-        return ctx.events.startMode('one_select', {
+        return ctx.events.changeMode('one_select', {
           featureId: opts.featureId
         });
       }
@@ -34,7 +34,7 @@ module.exports = function(ctx, opts) {
         changeFn(e.lngLat);
       });
       this.on('mouseup', function() {
-        ctx.events.startMode('one_select', {
+        ctx.events.changeMode('one_select', {
           featureId: opts.featureId
         });
       });

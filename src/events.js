@@ -2,7 +2,7 @@ var ModeHandler = require('./modes/mode_handler');
 var findTargetAt = require('./lib/find_target_at');
 
 var modes = {
-  'many_select': require('./modes/many_features/select'),
+  'default': require('./modes/many_features/select'),
   'many_drag': require('./modes/many_features/drag'),
   'draw_line_string': require('./modes/draw_feature/line_string'),
   'draw_point': require('./modes/draw_feature/point'),
@@ -16,7 +16,8 @@ module.exports = function(ctx) {
   var isDown = false;
 
   var events = {};
-  var currentMode = ModeHandler(modes['many_select'](ctx));
+  var currentModeName = 'default';
+  var currentMode = ModeHandler(modes['default'](ctx));
 
   events.drag = function(event) {
     currentMode.drag(event);
@@ -33,8 +34,6 @@ module.exports = function(ctx) {
     event.featureTarget = target;
     currentMode.doubleclick(event);
   };
-
-  var dragFeatureState = 'none';
 
   events.mousemove  = function(event) {
     if (isDown) {
@@ -74,12 +73,19 @@ module.exports = function(ctx) {
   }
 
   var api = {
-    startMode: function(modename, opts) {
+    currentModeName: function() {
+      return currentModeName;
+    },
+    currentModeRender: function(geojson) {
+      return currentMode.render(geojson);
+    },
+    changeMode: function(modename, opts) {
       currentMode.stop();
       var modebuilder = modes[modename];
       if (modebuilder === undefined) {
         throw new Error(`${modename} is not valid`);
       }
+      currentModeName = modename;
       var mode = modebuilder(ctx, opts);
       currentMode = ModeHandler(mode);
       ctx.store.render();
