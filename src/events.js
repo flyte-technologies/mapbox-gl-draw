@@ -4,8 +4,8 @@ var findTargetAt = require('./lib/find_target_at');
 var modes = {
   'default': require('./modes/default'),
   'direct_select': require('./modes/direct_select'),
-  'draw_line_string': require('./modes/draw_line_string'),
   'draw_point': require('./modes/draw_point'),
+  'draw_line_string': require('./modes/draw_line_string'),
   'draw_polygon': require('./modes/draw_polygon')
 };
 
@@ -62,13 +62,34 @@ module.exports = function(ctx) {
     currentMode.trash();
   };
 
+
+  var isKeyModeValid = (code) => !(code === 8 || (code >= 48 && code <= 57));
+
   events.keydown = function(event) {
-    currentMode.keydown(event);
+    console.log(event.keyCode);
+    if (event.keyCode === 8) {
+      event.preventDefault();
+      api.fire('trash');
+    }
+    else if (isKeyModeValid(event.keyCode)) {
+      currentMode.keydown(event);
+    }
+    else if (event.keyCode === 49) {
+      ctx.api.changeMode('draw_point');
+    }
+    else if (event.keyCode === 50) {
+      ctx.api.changeMode('draw_line_string');
+    }
+    else if (event.keyCode === 51) {
+      ctx.api.changeMode('draw_polygon');
+    }
   };
 
   events.keyup = function(event) {
-    currentMode.keyup(event);
-  };
+    if (isKeyModeValid(event.keyCode)) {
+      currentMode.keyup(event);
+    }
+  }
 
   var api = {
     currentModeName: function() {
