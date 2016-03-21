@@ -1,5 +1,6 @@
 var {isEnterKey, isEscapeKey} = require('../lib/common_selectors');
 var Polygon = require('../feature_types/polygon');
+const types = require('../lib/types');
 
 module.exports = function(ctx) {
 
@@ -48,6 +49,7 @@ module.exports = function(ctx) {
 
   return {
     start: function() {
+      ctx.ui.setButtonActive(types.POLYGON);
       ctx.ui.setClass('mapbox-gl-draw_mouse-add');
       this.on('mousemove', () => true, onMouseMove);
       this.on('click', () => true, onClick);
@@ -55,7 +57,11 @@ module.exports = function(ctx) {
       this.on('keyup', isEnterKey, onFinish);
     },
     stop: function() {
+      ctx.ui.setButtonInactive(types.POLYGON);
       ctx.ui.clearClass();
+    },
+    trash: function() {
+      stopDrawingAndRemove();
     },
     render: function(geojson) {
       geojson.properties.active = geojson.properties.id === feature.id ? 'true' : 'false';

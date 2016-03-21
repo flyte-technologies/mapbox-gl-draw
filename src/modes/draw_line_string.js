@@ -1,5 +1,6 @@
 var {isEnterKey, isEscapeKey} = require('../lib/common_selectors');
 var LineString = require('../feature_types/line_string');
+const types = require('../lib/types');
 
 module.exports = function(ctx) {
 
@@ -46,6 +47,7 @@ module.exports = function(ctx) {
 
   return {
     start: function() {
+      ctx.ui.setButtonActive(types.LINE);
       ctx.ui.setClass('mapbox-gl-draw_mouse-add');
       this.on('mousemove', () => true, onMouseMove);
       this.on('click', () => true, onClick);
@@ -53,7 +55,11 @@ module.exports = function(ctx) {
       this.on('keyup', isEnterKey, onFinish);
     },
     stop: function() {
+      ctx.ui.setButtonInactive(types.LINE);
       ctx.ui.clearClass();
+    },
+    trash: function() {
+      stopDrawingAndRemove();
     },
     render: function(geojson) {
       geojson.properties.active = geojson.properties.id === feature.id ? 'true' : 'false';

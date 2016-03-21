@@ -59,25 +59,19 @@ module.exports = function(ctx) {
           title: 'delete',
           fn: function() {
             ctx.api.trash();
+            ctx.ui.setButtonInactive('trash');
           }
         }, controlClass);
-
-        ctx.ui.hideButton('trash');
-      }
-    },
-    hideButton: function(id) {
-      if (buttons[id]) {
-        buttons[id].style.display = 'none';
-      }
-    },
-    showButton: function (id) {
-      if (buttons[id]) {
-        buttons[id].style.display = 'block';
       }
     },
     setButtonActive: function(id) {
       if (buttons[id] && id !== 'trash') {
         buttons[id].classList.add('active');
+      }
+    },
+    setButtonInactive: function(id) {
+      if (buttons[id]) {
+        buttons[id].classList.remove('active');
       }
     },
     setAllInactive: function() {

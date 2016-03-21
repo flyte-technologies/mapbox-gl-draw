@@ -1,5 +1,6 @@
 var {isEnterKey, isEscapeKey} = require('../lib/common_selectors');
 var Point = require('../feature_types/point');
+const types = require('../lib/types');
 
 module.exports = function(ctx) {
 
@@ -27,13 +28,18 @@ module.exports = function(ctx) {
 
   return {
     start: function() {
+      ctx.ui.setButtonActive(types.POINT);
       ctx.ui.setClass('mapbox-gl-draw_mouse-add');
       this.on('mousemove', () => true, onMouseMove);
       this.on('click', () => true, onClick);
       this.on('keyup', isEscapeKey, stopDrawingAndRemove);
       this.on('keyup', isEnterKey, stopDrawingAndRemove);
     },
+    trash: function() {
+      stopDrawingAndRemove();
+    },
     stop: function() {
+      ctx.ui.setButtonInactive(types.POINT);
       ctx.ui.clearClass();
     },
     render: function(geojson) {
