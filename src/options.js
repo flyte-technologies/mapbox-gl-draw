@@ -6,7 +6,7 @@ const defaultOptions = {
   displayControlsDefault: true,
   styles: {},
   controls: {}
-}
+};
 
 const showControls = {
   point: true,
@@ -31,4 +31,4 @@ module.exports = function(options = {controls: {}}) {
   }
 
   return Object.assign(defaultOptions, options);
-}
+};

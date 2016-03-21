@@ -9,7 +9,7 @@ var Selectors = module.exports = {
       else {
         return false;
       }
-    }
+    };
   },
   noFeature: function(e) {
     return e.featureTarget === undefined;
@@ -29,4 +29,4 @@ var Selectors = module.exports = {
   isEnterKey: function(e) {
     return e.keyCode === 13;
   }
-}
+};

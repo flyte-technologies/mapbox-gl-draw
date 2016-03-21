@@ -1,7 +1,4 @@
-var Feature =  require('./feature');
-
-var toMidpoint = require('../lib/to_midpoint');
-var toVertex = require('../lib/to_vertex');
+var Feature = require('./feature');
 
 var LineString = function(ctx, geojson) {
   Feature.call(this, ctx, geojson);
@@ -15,7 +12,7 @@ LineString.prototype.addCoordinate = function(path, lng, lat) {
   var id = parseInt(path, 10);
   this.coordinates.splice(id, 0, [lng, lat]);
   this.ctx.store.render();
-}
+};
 
 LineString.prototype.removeCoordinate = function(path) {
   this.selectedCoords = {};
@@ -25,12 +22,12 @@ LineString.prototype.removeCoordinate = function(path) {
     this.ctx.store.delete(this.id);
   }
   this.ctx.store.render();
-}
+};
 
 LineString.prototype.getCoordinate = function(path) {
   var id = parseInt(path, 10);
   return JSON.parse(JSON.stringify(this.coordinates[id]));
-}
+};
 
 module.exports = LineString;
 

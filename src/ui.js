@@ -1,11 +1,11 @@
 const types = require('./lib/types');
-var {createButton, DOM} = require('./lib/util');
+var {createButton} = require('./lib/util');
 
 module.exports = function(ctx) {
 
   var buttons = {};
 
-  var lastClass = undefined;
+  var lastClass;
 
   ctx.ui = {
     setClass: function(nextClass) {
@@ -59,7 +59,7 @@ module.exports = function(ctx) {
           title: 'delete',
           fn: function() {
             ctx.api.trash();
-          },
+          }
         }, controlClass);
 
         ctx.ui.hideButton('trash');
@@ -80,7 +80,7 @@ module.exports = function(ctx) {
         buttons[id].classList.add('active');
       }
     },
-    setAllInactive: function(id) {
+    setAllInactive: function() {
       var buttonIds = Object.keys(buttons);
 
       buttonIds.forEach(buttonId => {
@@ -99,5 +99,5 @@ module.exports = function(ctx) {
         buttons[buttonId] = null;
       });
     }
-  }
-}
+  };
+};

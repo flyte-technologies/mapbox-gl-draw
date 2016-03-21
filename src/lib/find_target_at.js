@@ -5,14 +5,14 @@ var priorities = {
   'feature': 2,
   'midpoint': 0,
   'vertex': 0
-}
+};
 
 var dist = function(a, b) {
   var dLng = Math.abs(a.lng - b.lng);
   var dLat = Math.abs(a.lat - b.lat);
 
-  return Math.pow((dLng*dLng) + (dLat * dLat), .5);
-}
+  return Math.pow((dLng * dLng) + (dLat * dLat), .5);
+};
 
 module.exports = function(event, ctx) {
 
@@ -20,7 +20,7 @@ module.exports = function(event, ctx) {
     var aPri = priorities[a.properties.meta];
     var bPri = priorities[b.properties.meta];
 
-    if (aPri != bPri) {
+    if (aPri !== bPri) {
       return aPri - bPri;
     }
     else if(a.properties.meta === 'feature') {
@@ -31,7 +31,7 @@ module.exports = function(event, ctx) {
       var bDist = dist(event.lngLat, b.properties);
       return bDist - aDist;
     }
-  }
+  };
 
   var features = ctx.map.queryRenderedFeatures([event.point.x, event.point.y], {});
 
@@ -41,5 +41,5 @@ module.exports = function(event, ctx) {
   });
 
   features.sort(sort);
-  return features[0]
-}
+  return features[0];
+};

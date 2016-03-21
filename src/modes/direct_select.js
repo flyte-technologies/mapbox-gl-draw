@@ -25,20 +25,20 @@ module.exports = function(ctx, featureId) {
     else if (isShiftDown(e) && selectedIndex === -1) {
       selectedCoordPaths.push(about.path);
     }
-  }
+  };
 
   var onMidpoint = function(e) {
     dragging = true;
     startPos = e.lngLat;
     var about = e.featureTarget.properties;
     feature.addCoordinate(about.path, about.lng, about.lat);
-    selectedCoordPaths  = [about.path];
-  }
+    selectedCoordPaths = [about.path];
+  };
 
   var setupCoordPos = function() {
     coordPos = selectedCoordPaths.map(path => feature.getCoordinate(path));
     numCoords = coordPos.length;
-  }
+  };
 
   return {
     start: function() {
@@ -53,7 +53,7 @@ module.exports = function(ctx, featureId) {
         var lngChange = e.lngLat.lng - startPos.lng;
         var latChange = e.lngLat.lat - startPos.lat;
 
-        for (var i=0; i<numCoords; i++) {
+        for (var i = 0; i < numCoords; i++) {
           var path = selectedCoordPaths[i];
           var pos = coordPos[i];
           var lng = pos[0] + lngChange;
@@ -71,13 +71,13 @@ module.exports = function(ctx, featureId) {
         e.originalEvent.stopPropagation();
         ctx.events.changeMode('default', [featureId]);
       });
-      this.on('click', noFeature, function(e) {
+      this.on('click', noFeature, function() {
         selectedCoordPaths = [];
       });
       this.on('trash', function() {
         feature.deleteCoordinates(selectedCoordPaths);
         if (feature.isValid() === false) {
-          ctx.store.delete(id);
+          ctx.store.delete(featureId);
           ctx.events.changeMode('default');
         }
       });
@@ -89,16 +89,16 @@ module.exports = function(ctx, featureId) {
       geojson.properties.active = featureId === geojson.properties.id ? 'true' : 'false';
       var midpoints = [];
       var vertices = [];
-      for (var i = 0; i<geojson.geometry.coordinates.length; i++) {
+      for (var i = 0; i < geojson.geometry.coordinates.length; i++) {
         var ring = geojson.geometry.coordinates[i];
-        for (var j = 0; j<ring.length-1; j++) {
+        for (var j = 0; j < ring.length - 1; j++) {
           var coord = ring[j];
           var path = `${i}.${j}`;
 
           vertices.push(toVertex(feature.id, coord, path, selectedCoordPaths.indexOf(path) > -1));
 
           if (j > 0) {
-            var start = vertices[j-1];
+            var start = vertices[j - 1];
             var end = vertices[j];
             midpoints.push(toMidpoint(feature.id, start, end, ctx.map));
           }
@@ -106,5 +106,5 @@ module.exports = function(ctx, featureId) {
       }
       return [geojson].concat(midpoints).concat(vertices);
     }
-  }
-}
+  };
+};

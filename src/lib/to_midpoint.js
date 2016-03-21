@@ -19,5 +19,5 @@ module.exports = function(parent, startVertex, endVertex, map) {
       type: 'Point',
       coordinates: [mid.lng, mid.lat]
     }
-  }
-}
+  };
+};

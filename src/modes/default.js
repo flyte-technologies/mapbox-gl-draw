@@ -15,11 +15,11 @@ module.exports = function(ctx) {
     featureCoords = featureIds.map(id => selectedFeaturesById[id].getCoordinates());
     features = featureIds.map(id => selectedFeaturesById[id]);
     numFeatures = featureIds.length;
-  }
+  };
 
   return {
     start: function() {
-      this.on('click', noFeature, function(e) {
+      this.on('click', noFeature, function() {
         selectedFeaturesById = {};
       });
 
@@ -61,17 +61,20 @@ module.exports = function(ctx) {
         var lngD = e.lngLat.lng - startPos.lng;
         var latD = e.lngLat.lat - startPos.lat;
 
-        for (var i=0; i < numFeatures; i++) {
+        var coordMap = (coord) => [coord[0] + lngD, coord[1] + latD];
+        var ringMap = (ring) => ring.map(coord => [coord[0] + lngD, coord[1] + latD]);
+
+        for (var i = 0; i < numFeatures; i++) {
           var feature = features[i];
           if (feature.type === 'Point') {
             feature.coordinates[0] = featureCoords[i][0] + lngD;
             feature.coordinates[1] = featureCoords[i][1] + latD;
           }
           else if (feature.type === 'LineString') {
-            feature.coordinates = featureCoords[i].map(coord => [coord[0] + lngD, coord[1] + latD]);
+            feature.coordinates = featureCoords[i].map(coordMap);
           }
           else if (feature.type === 'Polygon') {
-            feature.coordinates = featureCoords[i].map(ring => ring.map(coord => [coord[0] + lngD, coord[1] + latD]));
+            feature.coordinates = featureCoords[i].map(ringMap);
           }
         }
       });
@@ -96,4 +99,4 @@ module.exports = function(ctx) {
       return geojson;
     }
   };
-}
+};

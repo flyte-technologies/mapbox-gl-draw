@@ -12,8 +12,6 @@ var ModeHandler = function(mode, DrawContext) {
     trash: []
   };
 
-  var lastClass = '';
-
   var ctx = {
     on: function(event, selector, fn) {
       if (handlers[event] === undefined) {
@@ -29,9 +27,9 @@ var ModeHandler = function(mode, DrawContext) {
         return handler.selector !== selector || handler.fn !== fn;
       });
     }
-  }
+  };
 
-  function delegate(eventName, event) {
+  var delegate = function (eventName, event) {
     var handles = handlers[eventName];
     var iHandle = handles.length;
     while (iHandle--) {
@@ -42,7 +40,7 @@ var ModeHandler = function(mode, DrawContext) {
         break;
       }
     }
-  }
+  };
 
   mode.start.call(ctx);
 
@@ -76,7 +74,7 @@ var ModeHandler = function(mode, DrawContext) {
     trash: function(event) {
       delegate('trash', event);
     }
-  }
-}
+  };
+};
 
-module.exports  = ModeHandler;
+module.exports = ModeHandler;

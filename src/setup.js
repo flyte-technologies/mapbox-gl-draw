@@ -1,7 +1,6 @@
 var events = require('./events');
 var Store = require('./store');
 var ui = require('./ui');
-var DOM = require('./lib/util').DOM;
 
 var theme = require('./lib/theme');
 
@@ -13,8 +12,6 @@ module.exports = function(ctx) {
   ctx.container = null;
   ctx.store = null;
   ui(ctx);
-
-  var buttons = {};
 
   var setup = {
     addTo: function(map) {
@@ -63,8 +60,8 @@ module.exports = function(ctx) {
           type: 'geojson'
         });
 
-        // selected features style
-        batch.addSource('draw-selected', {
+        // hot features style
+        batch.addSource('draw-hot', {
           data: {
             type: 'FeatureCollection',
             features: []
@@ -74,7 +71,7 @@ module.exports = function(ctx) {
 
         for (let i = 0; i < theme.length; i++) {
           let style = theme[i];
-          style.source = 'draw-selected';
+          style.source = 'draw-hot';
           // TODO: this should be on both sources...
           // TODO: let users overwrite this...
           batch.addLayer(style);
@@ -84,16 +81,16 @@ module.exports = function(ctx) {
     },
     removeLayers: function() {
       ctx.map.batch(function (batch) {
-        for (let i=0; i < theme.length; i++) {
+        for (let i = 0; i < theme.length; i++) {
           let { id } = theme[i];
           batch.removeLayer(id);
         }
 
-        batch.removeSource('draw');
-        batch.removeSource('draw-selected');
+        batch.removeSource('draw-cold');
+        batch.removeSource('draw-hot');
       });
     }
-  }
+  };
 
   return setup;
-}
+};

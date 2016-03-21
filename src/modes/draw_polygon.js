@@ -3,21 +3,19 @@ var Polygon = require('../feature_types/polygon');
 
 module.exports = function(ctx) {
 
-  var geojson = {
-    "type": "Feature",
-    "properties": {},
-    "geometry": {
-      "type": "Polygon",
-      "coordinates": [[[0,0], [0, 0],[0, 0]]]
+  var feature = new Polygon(ctx, {
+    'type': 'Feature',
+    'properties': {},
+    'geometry': {
+      'type': 'Polygon',
+      'coordinates': [[[0,0], [0, 0],[0, 0]]]
     }
-  }
-
-  var feature = new Polygon(ctx, geojson);
+  });
 
   var stopDrawingAndRemove = function() {
     ctx.events.changeMode('default');
     ctx.store.delete(feature.id);
-  }
+  };
 
   var pos = 0;
 
@@ -29,15 +27,15 @@ module.exports = function(ctx) {
     else {
       feature.updateCoordinate(`0.${pos}`, e.lngLat.lng, e.lngLat.lat);
     }
-  }
+  };
 
-  var onClick = function(e) {
+  var onClick = function() {
     // did we click on the last point
     // did we click on the first point
     pos++;
-  }
+  };
 
-  var onFinish = function(e) {
+  var onFinish = function() {
     feature.removeCoordinate(`0.${pos}`);
     pos--;
     if(pos < 2) {
@@ -46,7 +44,7 @@ module.exports = function(ctx) {
     else {
       ctx.events.changeMode('default');
     }
-  }
+  };
 
   return {
     start: function() {
@@ -62,8 +60,8 @@ module.exports = function(ctx) {
     render: function(geojson) {
       geojson.properties.active = geojson.properties.id === feature.id ? 'true' : 'false';
 
-      if (geojson.properties.active && pos == 0) {
-        var coords = [geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]];
+      if (geojson.properties.active && pos === 0) {
+        let coords = [geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]];
         geojson = {
           'type': 'Feature',
           'properties': geojson.properties,
@@ -71,10 +69,10 @@ module.exports = function(ctx) {
             'coordinates': coords,
             'type': 'Point'
           }
-        }
+        };
       }
-      else if (geojson.properties.active && pos == 1) {
-        var coords = [[geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]], [geojson.geometry.coordinates[0][1][0], geojson.geometry.coordinates[0][1][1]]];
+      else if (geojson.properties.active && pos === 1) {
+        let coords = [[geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]], [geojson.geometry.coordinates[0][1][0], geojson.geometry.coordinates[0][1][1]]];
         geojson = {
           'type': 'Feature',
           'properties': geojson.properties,
@@ -82,10 +80,10 @@ module.exports = function(ctx) {
             'coordinates': coords,
             'type': 'LineString'
           }
-        }
+        };
       }
 
       return geojson;
     }
-  }
-}
+  };
+};

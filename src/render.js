@@ -11,23 +11,19 @@ module.exports = function() {
         modeFeatures = [modeFeatures];
       }
 
-      if (true) {
-        buckets.selected = buckets.selected.concat(modeFeatures)
-      }
-      else {
-        buckets.deselected = buckets.deselected.concat(modeFeatures)
-      }
+      buckets.hot = buckets.hot.concat(modeFeatures);
       return buckets;
-    }, { deselected: [], selected: [] });
 
-    this.ctx.map.getSource('draw').setData({
+    }, { cold: [], hot: [] });
+
+    this.ctx.map.getSource('draw-cold').setData({
       type: 'FeatureCollection',
-      features: featureBuckets.deselected
+      features: featureBuckets.cold
     });
 
-    this.ctx.map.getSource('draw-selected').setData({
+    this.ctx.map.getSource('draw-hot').setData({
       type: 'FeatureCollection',
-      features: featureBuckets.selected
+      features: featureBuckets.hot
     });
   }
-}
+};

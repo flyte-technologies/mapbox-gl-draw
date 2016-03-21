@@ -22,7 +22,7 @@ var Draw = function(options) {
   api.types = types;
 
   return api;
-}
+};
 
 if (window.mapboxgl) {
   mapboxgl.Draw = Draw;

@@ -1,4 +1,4 @@
-var Feature =  require('./feature');
+var Feature = require('./feature');
 
 var Polygon = function(ctx, geojson) {
   Feature.call(this, ctx, geojson);
@@ -14,7 +14,7 @@ Polygon.prototype.addCoordinate = function(path, lng, lat) {
 
   ring.splice(ids[1], 0, [lng, lat]);
   this.ctx.store.render();
-}
+};
 
 Polygon.prototype.removeCoordinate = function(path) {
   var ids = path.split('.').map(x => parseInt(x, 10));
@@ -26,17 +26,17 @@ Polygon.prototype.removeCoordinate = function(path) {
     }
     this.ctx.store.render();
   }
-}
+};
 
 Polygon.prototype.getCoordinate = function(path) {
   var ids = path.split('.').map(x => parseInt(x, 10));
   var ring = this.coordinates[ids[0]];
   return JSON.parse(JSON.stringify(ring[ids[1]]));
-}
+};
 
 Polygon.prototype.getCoordinates = function() {
   return this.coordinates.map(coords => coords.concat([coords[0]]));
-}
+};
 
 module.exports = Polygon;
 

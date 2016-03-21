@@ -1,18 +1,18 @@
 var hat = require('hat');
 
 var featureTypes = {
-  "Polygon": require('./feature_types/polygon'),
-  "LineString": require('./feature_types/line_string'),
-  "Point": require('./feature_types/point')
-}
+  'Polygon': require('./feature_types/polygon'),
+  'LineString': require('./feature_types/line_string'),
+  'Point': require('./feature_types/point')
+};
 
-var API = module.exports = function(ctx) {
+module.exports = function(ctx) {
 
   return {
-    add: function (geojson, opts) {
-      var geojson = JSON.parse(JSON.stringify(geojson));
+    add: function (geojson) {
+      geojson = JSON.parse(JSON.stringify(geojson));
       if (geojson.type === 'FeatureCollection') {
-        return geojson.features.map(feature => this.add(feature, options));
+        return geojson.features.map(feature => this.add(feature));
       }
 
       if (!geojson.geometry) {
@@ -31,8 +31,8 @@ var API = module.exports = function(ctx) {
         throw new Error('Invalid feature type. Must be Point, Polygon or LineString');
       }
 
-      var feature = new model(ctx, geojson);
-      return ctx.store.add(feature);
+      var internalFeature = new model(ctx, geojson);
+      return ctx.store.add(internalFeature);
     },
     get: function (id) {
       var feature = ctx.store.get(id);
@@ -44,7 +44,7 @@ var API = module.exports = function(ctx) {
       return {
         type: 'FeatureCollection',
         features: ctx.store.getAll().map(feature => feature.toGeoJSON())
-      }
+      };
     },
     delete: function(id) {
       ctx.store.delete(id);
@@ -68,5 +68,5 @@ var API = module.exports = function(ctx) {
     trash: function() {
       ctx.events.fire('trash');
     }
-  }
-}
+  };
+};

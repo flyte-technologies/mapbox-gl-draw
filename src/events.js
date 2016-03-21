@@ -15,7 +15,7 @@ module.exports = function(ctx) {
 
   var events = {};
   var currentModeName = 'default';
-  var currentMode = ModeHandler(modes['default'](ctx), ctx);
+  var currentMode = ModeHandler(modes.default(ctx), ctx);
 
   events.drag = function(event) {
     currentMode.drag(event);
@@ -33,7 +33,7 @@ module.exports = function(ctx) {
     currentMode.doubleclick(event);
   };
 
-  events.mousemove  = function(event) {
+  events.mousemove = function(event) {
     if (isDown) {
       events.drag(event);
     }
@@ -44,14 +44,14 @@ module.exports = function(ctx) {
     }
   };
 
-  events.mousedown  = function(event) {
+  events.mousedown = function(event) {
     isDown = true;
     var target = findTargetAt(event, ctx);
     event.featureTarget = target;
     currentMode.mousedown(event);
   };
 
-  events.mouseup  = function(event) {
+  events.mouseup = function(event) {
     isDown = false;
     var target = findTargetAt(event, ctx);
     event.featureTarget = target;
@@ -60,15 +60,15 @@ module.exports = function(ctx) {
 
   events.trash = function() {
     currentMode.trash();
-  }
+  };
 
-  events.keydown  = function(event) {
+  events.keydown = function(event) {
     currentMode.keydown(event);
   };
 
-  events.keyup  = function(event) {
+  events.keyup = function(event) {
     currentMode.keyup(event);
-  }
+  };
 
   var api = {
     currentModeName: function() {
@@ -113,7 +113,7 @@ module.exports = function(ctx) {
       ctx.container.removeEventListener('keydown', events.keydown);
       ctx.container.removeEventListener('keyup', events.keyup);
     }
-  }
+  };
 
   return api;
-}
+};
