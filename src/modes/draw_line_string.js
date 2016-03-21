@@ -9,7 +9,7 @@ module.exports = function(ctx) {
     'properties': {},
     'geometry': {
       'type': 'LineString',
-      'coordinates': [[0, 0],[0, 0]]
+      'coordinates': []
     }
   });
 
@@ -62,9 +62,13 @@ module.exports = function(ctx) {
     render: function(geojson) {
       geojson.properties.active = geojson.properties.id === feature.id ? 'true' : 'false';
 
+      if (geojson.properties.active === 'true' && geojson.geometry.coordinates[0] === undefined) {
+        return undefined;
+      }
+
       if (geojson.properties.active === 'true' && pos === 0) {
         var coords = [geojson.geometry.coordinates[0][0], geojson.geometry.coordinates[0][1]];
-        geojson = {
+        return {
           'type': 'Feature',
           'properties': geojson.properties,
           'geometry': {
@@ -73,6 +77,7 @@ module.exports = function(ctx) {
           }
         };
       }
+
       return geojson;
     }
   };

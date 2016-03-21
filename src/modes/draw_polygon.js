@@ -9,7 +9,7 @@ module.exports = function(ctx) {
     'properties': {},
     'geometry': {
       'type': 'Polygon',
-      'coordinates': [[[0,0], [0, 0],[0, 0]]]
+      'coordinates': [[]]
     }
   });
 
@@ -21,13 +21,7 @@ module.exports = function(ctx) {
   var pos = 0;
 
   var onMouseMove = function(e) {
-    if(pos === 0) {
-      feature.updateCoordinate(`0.${0}`, e.lngLat.lng, e.lngLat.lat);
-      feature.updateCoordinate(`0.${1}`, e.lngLat.lng, e.lngLat.lat);
-    }
-    else {
-      feature.updateCoordinate(`0.${pos}`, e.lngLat.lng, e.lngLat.lat);
-    }
+    feature.updateCoordinate(`0.${pos}`, e.lngLat.lng, e.lngLat.lat);
   };
 
   var onClick = function() {
@@ -64,10 +58,13 @@ module.exports = function(ctx) {
     render: function(geojson) {
       geojson.properties.active = geojson.properties.id === feature.id ? 'true' : 'false';
 
+      if (geojson.properties.active === 'true' && geojson.geometry.coordinates[0][0] === undefined) {
+        return undefined;
+      }
 
       if (geojson.properties.active === 'true' && pos === 0) {
         let coords = [geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]];
-        geojson = {
+        return {
           'type': 'Feature',
           'properties': geojson.properties,
           'geometry': {
@@ -76,9 +73,10 @@ module.exports = function(ctx) {
           }
         };
       }
-      else if (geojson.properties.active === 'true' && pos === 1) {
+
+      if (geojson.properties.active === 'true' && pos === 1) {
         let coords = [[geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]], [geojson.geometry.coordinates[0][1][0], geojson.geometry.coordinates[0][1][1]]];
-        geojson = {
+        return {
           'type': 'Feature',
           'properties': geojson.properties,
           'geometry': {

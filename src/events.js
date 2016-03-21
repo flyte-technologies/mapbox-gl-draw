@@ -66,7 +66,6 @@ module.exports = function(ctx) {
   var isKeyModeValid = (code) => !(code === 8 || (code >= 48 && code <= 57));
 
   events.keydown = function(event) {
-    console.log(event.keyCode);
     if (event.keyCode === 8) {
       event.preventDefault();
       api.fire('trash');

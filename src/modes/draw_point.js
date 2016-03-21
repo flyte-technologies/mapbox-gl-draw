@@ -9,7 +9,7 @@ module.exports = function(ctx) {
     'properties': {},
     'geometry': {
       'type': 'Point',
-      'coordinates': [0,0]
+      'coordinates': []
     }
   });
 
@@ -42,6 +42,9 @@ module.exports = function(ctx) {
     },
     render: function(geojson) {
       geojson.properties.active = geojson.properties.id === feature.id ? 'true' : 'false';
+      if (geojson.properties.active === 'true' && geojson.geometry.coordinates.length === 0) {
+        return undefined;
+      }
       return geojson;
     }
   };

@@ -7,6 +7,12 @@ var Polygon = function(ctx, geojson) {
 
 Polygon.prototype = Object.create(Feature.prototype);
 
+Polygon.prototype.isValid = function() {
+  return this.coordinates.every(function(ring) {
+    return ring.length > 2;
+  });
+}
+
 Polygon.prototype.addCoordinate = function(path, lng, lat) {
   var ids = path.split('.').map(x => parseInt(x, 10));
 
@@ -36,6 +42,18 @@ Polygon.prototype.getCoordinate = function(path) {
 
 Polygon.prototype.getCoordinates = function() {
   return this.coordinates.map(coords => coords.concat([coords[0]]));
+};
+
+Polygon.prototype.updateCoordinate = function(path, lng, lat) {
+  var parts = path.split('.');
+  var ringId = parseInt(parts[0], 10);
+  var coordId = parseInt(parts[1], 10);
+
+  if (this.coordinates[ringId] === undefined) {
+    this.coordinates[ringId] = [];
+  }
+
+  this.coordinates[ringId][coordId] = [lng, lat];
 };
 
 module.exports = Polygon;

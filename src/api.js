@@ -32,7 +32,9 @@ module.exports = function(ctx) {
       }
 
       var internalFeature = new model(ctx, geojson);
-      return ctx.store.add(internalFeature);
+      var id = ctx.store.add(internalFeature);
+      ctx.store.render();
+      return id;
     },
     get: function (id) {
       var feature = ctx.store.get(id);
@@ -48,19 +50,11 @@ module.exports = function(ctx) {
     },
     delete: function(id) {
       ctx.store.delete(id);
+      ctx.store.render();
     },
     deleteAll: function() {
       ctx.store.getAll().forEach(feature => ctx.store.delete(feature.id));
-    },
-    deleteSelected: function() {
-      ctx.store.getAll().forEach(feature => {
-        if (feature.isSelected() ) {
-          ctx.store.delete(feature.id);
-        }
-        else if (feature.deleteSelectedCoords) {
-          feature.deleteSelectedCoords();
-        }
-      });
+      ctx.store.render();
     },
     changeMode: function(mode, opts) {
       ctx.events.changeMode(mode, opts);

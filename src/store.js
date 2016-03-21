@@ -9,7 +9,6 @@ var Store = module.exports = function(ctx) {
 
 Store.prototype.add = function(feature) {
   this.features[feature.id] = feature;
-  this.render();
   return feature.id;
 };
 
@@ -23,9 +22,7 @@ Store.prototype.getAll = function() {
 
 Store.prototype.delete = function (id) {
   var feature = this.get(id);
-  this.render();
   if (feature) {
     delete this.features[id];
-    this.render();
   }
 };
