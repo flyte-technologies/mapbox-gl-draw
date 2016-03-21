@@ -15,6 +15,7 @@ module.exports = function(ctx, featureId) {
 
 
   var onVertex = function(e) {
+    console.log('onVertex');
     dragging = true;
     startPos = e.lngLat;
     var about = e.featureTarget.properties;
@@ -45,7 +46,10 @@ module.exports = function(ctx, featureId) {
       ctx.ui.setClass('mapbox-gl-draw_mouse-direct-select');
       this.on('mousedown', isOfMetaType('vertex'), onVertex);
       this.on('mousedown', isOfMetaType('midpoint'), onMidpoint);
-      this.on('drag', () => dragging, function(e) {
+      this.on('drag', () => {
+        console.log('drag', dragging);
+        return dragging;
+      }, function(e) {
         e.originalEvent.stopPropagation();
         if (coordPos === null) {
           setupCoordPos();
@@ -86,9 +90,9 @@ module.exports = function(ctx, featureId) {
       ctx.ui.clearClass();
     },
     render: function(geojson) {
-      var midpoints = [];
-      var vertices = [];
       if (featureId === geojson.properties.id) {
+        var midpoints = [];
+        var vertices = [];
         console.log('found direct');
         geojson.properties.active = 'true';
         for (var i = 0; i < geojson.geometry.coordinates.length; i++) {
@@ -106,6 +110,9 @@ module.exports = function(ctx, featureId) {
                 midpoints.push(toMidpoint(feature.id, start, end, ctx.map));
               }
             }
+            var end = vertices[0];
+            var start = vertices[vertices.length-1];
+            midpoints.push(toMidpoint(feature.id, start, end, ctx.map));
           }
           else {
             var coord = geojson.geometry.coordinates[i];
@@ -118,11 +125,12 @@ module.exports = function(ctx, featureId) {
             }
           }
         }
+        return [geojson].concat(midpoints).concat(vertices);
       }
       else {
         geojson.properties.active = 'false';
+        return geojson;
       }
-      return [geojson].concat(midpoints).concat(vertices);
     }
   };
 };
