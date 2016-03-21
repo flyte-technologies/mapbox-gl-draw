@@ -53,13 +53,11 @@ module.exports = function(ctx) {
       this.on('click', () => true, onClick);
       this.on('keyup', isEscapeKey, stopDrawingAndRemove);
       this.on('keyup', isEnterKey, onFinish);
+      this.on('trash', () => true, stopDrawingAndRemove);
     },
     stop: function() {
       ctx.ui.setButtonInactive(types.LINE);
       ctx.ui.clearClass();
-    },
-    trash: function() {
-      stopDrawingAndRemove();
     },
     render: function(geojson) {
       geojson.properties.active = geojson.properties.id === feature.id ? 'true' : 'false';

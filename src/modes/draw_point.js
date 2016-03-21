@@ -34,9 +34,7 @@ module.exports = function(ctx) {
       this.on('click', () => true, onClick);
       this.on('keyup', isEscapeKey, stopDrawingAndRemove);
       this.on('keyup', isEnterKey, stopDrawingAndRemove);
-    },
-    trash: function() {
-      stopDrawingAndRemove();
+      this.on('trash', () => true, stopDrawingAndRemove);
     },
     stop: function() {
       ctx.ui.setButtonInactive(types.POINT);

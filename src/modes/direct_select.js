@@ -15,7 +15,6 @@ module.exports = function(ctx, featureId) {
 
 
   var onVertex = function(e) {
-    console.log('onVertex');
     dragging = true;
     startPos = e.lngLat;
     var about = e.featureTarget.properties;
@@ -47,7 +46,6 @@ module.exports = function(ctx, featureId) {
       this.on('mousedown', isOfMetaType('vertex'), onVertex);
       this.on('mousedown', isOfMetaType('midpoint'), onMidpoint);
       this.on('drag', () => {
-        console.log('drag', dragging);
         return dragging;
       }, function(e) {
         e.originalEvent.stopPropagation();
@@ -71,19 +69,23 @@ module.exports = function(ctx, featureId) {
         numCoords = null;
         startPos = null;
       });
-      this.on('doubleclick', () => true, function(e) {
+      this.on('click', (e) => noFeature(e) && selectedCoordPaths.length == 0, function(e) {
         e.originalEvent.stopPropagation();
         ctx.events.changeMode('default', [featureId]);
       });
-      this.on('click', noFeature, function() {
+      this.on('click', e => noFeature(e) && selectedCoordPaths.length > 0, function() {
         selectedCoordPaths = [];
       });
-      this.on('trash', function() {
+      this.on('trash', () => selectedCoordPaths.length > 0, function() {
         feature.deleteCoordinates(selectedCoordPaths);
+        selectedCoordPaths = [];
         if (feature.isValid() === false) {
           ctx.store.delete(featureId);
           ctx.events.changeMode('default');
         }
+      });
+      this.on('trash', () => selectedCoordPaths.length === 0, function() {
+        ctx.events.changeMode('default', [featureId]);
       });
     },
     stop: function() {
@@ -93,7 +95,6 @@ module.exports = function(ctx, featureId) {
       if (featureId === geojson.properties.id) {
         var midpoints = [];
         var vertices = [];
-        console.log('found direct');
         geojson.properties.active = 'true';
         for (var i = 0; i < geojson.geometry.coordinates.length; i++) {
           if (feature.type === 'Polygon') {

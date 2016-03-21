@@ -1,4 +1,4 @@
-var {noFeature, isShiftDown, isFeature, isFeatureButNotPoint} = require('../lib/common_selectors');
+var {noFeature, isShiftDown, isFeature} = require('../lib/common_selectors');
 
 module.exports = function(ctx) {
 
@@ -10,12 +10,21 @@ module.exports = function(ctx) {
   var features = null;
   var numFeatures = null;
 
+  var readyForDirectSelect = function(e) {
+    var about = e.featureTarget.properties;
+    return isFeature(e) && about.type !== 'Point' && selectedFeaturesById[about.id] !== undefined;
+  };
+
   var buildFeatureCoords = function() {
     var featureIds = Object.keys(selectedFeaturesById);
     featureCoords = featureIds.map(id => selectedFeaturesById[id].getCoordinates());
     features = featureIds.map(id => selectedFeaturesById[id]);
     numFeatures = featureIds.length;
   };
+
+  var directSelect = function(e) {
+    ctx.api.changeMode('direct_select', e.featureTarget.properties.id);
+  }
 
   return {
     start: function() {
@@ -30,9 +39,9 @@ module.exports = function(ctx) {
 
         var isSelected = selectedFeaturesById[id] !== undefined;
 
-        if (isSelected && isShiftDown(e)) {
+        if (isSelected && !isShiftDown(e)) {
           // unselect
-          delete selectedFeaturesById[id];
+          this.on('mouseup', readyForDirectSelect, directSelect);
         }
         else if (isSelected && isShiftDown(e)) {
           // add to selected
@@ -53,6 +62,7 @@ module.exports = function(ctx) {
       });
 
       this.on('drag', () => dragging, function(e) {
+        this.off('mouseup', readyForDirectSelect, directSelect);
         e.originalEvent.stopPropagation();
         if (featureCoords === null) {
           buildFeatureCoords();
@@ -79,11 +89,6 @@ module.exports = function(ctx) {
         }
       });
 
-      this.on('doubleclick', isFeatureButNotPoint, function(e) {
-        e.originalEvent.stopPropagation();
-        ctx.api.changeMode('direct_select', e.featureTarget.properties.id);
-      });
-
       this.on('trash', () => true, function() {
         dragging = false;
         featureCoords = null;
@@ -91,7 +96,6 @@ module.exports = function(ctx) {
         numFeatures = null;
         Object.keys(selectedFeaturesById).forEach(id => ctx.store.delete(id));
         selectedFeaturesById = {};
-        console.log('woot');
       });
     },
     render: function(geojson) {

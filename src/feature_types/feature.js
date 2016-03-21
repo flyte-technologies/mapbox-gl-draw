@@ -35,7 +35,7 @@ Feature.prototype.isValid = function() {
     return this.coordinates.length > 1;
   }
   else {
-    return this.coordinates.all(function(ring) {
+    return this.coordinates.every(function(ring) {
       return ring.length > 2;
     });
   }
