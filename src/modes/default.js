@@ -1,8 +1,11 @@
 var {noFeature, isShiftDown, isFeature} = require('../lib/common_selectors');
 
-module.exports = function(ctx) {
+module.exports = function(ctx, startingSelectedFeatureIds) {
 
   var selectedFeaturesById = {};
+  (startingSelectedFeatureIds || []).forEach(id => {
+    selectedFeaturesById[id] = ctx.store.get(id);
+  });
 
   var startPos = null;
   var dragging = false;

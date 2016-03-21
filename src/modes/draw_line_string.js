@@ -58,6 +58,9 @@ module.exports = function(ctx) {
     stop: function() {
       ctx.ui.setButtonInactive(types.LINE);
       ctx.ui.clearClass();
+      if (!feature.isValid()) {
+        ctx.store.delete(feature.id);
+      }
     },
     render: function(geojson) {
       geojson.properties.active = geojson.properties.id === feature.id ? 'true' : 'false';

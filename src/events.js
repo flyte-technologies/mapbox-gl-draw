@@ -106,6 +106,12 @@ module.exports = function(ctx) {
       currentModeName = modename;
       var mode = modebuilder(ctx, opts);
       currentMode = ModeHandler(mode, ctx);
+
+      ctx.map.fire('draw.modechange', {
+        mode: modename,
+        opts: opts
+      });
+
       ctx.store.render();
     },
     fire: function(name, event) {

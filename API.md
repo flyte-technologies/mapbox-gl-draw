@@ -184,9 +184,9 @@ The three draw modes work identically. They do not take an options argument.
 
 Draw fires off a number of events on draw and select actions. All of these events are name spaced `draw` inside of the mapboxgl event emitter.
 
-### draw.change_mode
+### draw.modechange
 
-This event is fired just after the current mode is stopped and just before the next mode is started.If the `new` object provided is changed, the changed values will be used to start the next mode.
+This event is fired just after the current mode is stopped and just before the next mode is started. A render will not happen until after all event handlers have been triggered. This means you can force a mode redirect by calling `changeMode` inside of a `draw.modechange` handler.
 
 This is not fired when the first mode is started.
 
@@ -194,33 +194,22 @@ Here is an example payload.
 
 ```js
 {
-  old: {
-    mode: `default`,
-    options: []
-  },
-  new: {
-    mode: `direct_select`
-    options: '123123123'
-  }
+  mode: `direct_select`
+  opts: '123123123'
 }
 ```
 
-### draw.delete
+### draw.deleted
 
 This is fired every time a feature is deleted inside of `mapbox-gl-draw`. The payload is the GeoJSON feature just before it was deleted.
 
-### draw.active
+### draw.mode.default.selected.start
 
-This is fired every time a feature is set to active or inactive. If a feature was active and is then set to active again, this is not fired. Same goes for inactive. This is only fired for features. Not for vertices.
+This is fired every time a feature is selected in the default mode. The payload is an array of feature ids being selected. This is **NOT** fired when the mode starts as this information is in the `draw.modechange` event.
 
-Here is an example payload.
+### draw.mode.default.selected.end
 
-```js
-{
-  active: false,
-  featureId: '123123123'
-}
-```
+This is fired every time a feature is unselected in the default mode. The payload is an array of feature ids being unselected. This is **NOT** fired when the mode stops, as this can be assumed via the `draw.modechange` event.
 
 ## Styling Draw
 
@@ -286,5 +275,6 @@ property | values | function
 id | string | only available when `meta` is `feature`
 parent | string | only avaible when `meta` is not `feature`
 coord_path | string | a `.` seporated path to one [lon, lat] entity in the parents coordinates
-lon | number | the longitude value of a handle. Only available when `meta` is ` midpoint`.
+lon | number | the longitude value of a handle. Only available when `meta` is `midpoint`.
+lat | number | the latitude value of a handle. Only available when `meta` is `midpoint`.
 bbox | array | the bounding box of the hidden features. Only available when `meta` is `too-small`.

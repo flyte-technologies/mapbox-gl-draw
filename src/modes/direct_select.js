@@ -17,12 +17,12 @@ module.exports = function(ctx, featureId) {
     dragging = true;
     startPos = e.lngLat;
     var about = e.featureTarget.properties;
-    var selectedIndex = selectedCoordPaths.indexOf(about.path);
+    var selectedIndex = selectedCoordPaths.indexOf(about.coord_path);
     if (!isShiftDown(e) && selectedIndex === -1) {
-      selectedCoordPaths = [about.path];
+      selectedCoordPaths = [about.coord_path];
     }
     else if (isShiftDown(e) && selectedIndex === -1) {
-      selectedCoordPaths.push(about.path);
+      selectedCoordPaths.push(about.coord_path);
     }
   };
 
@@ -30,12 +30,12 @@ module.exports = function(ctx, featureId) {
     dragging = true;
     startPos = e.lngLat;
     var about = e.featureTarget.properties;
-    feature.addCoordinate(about.path, about.lng, about.lat);
-    selectedCoordPaths = [about.path];
+    feature.addCoordinate(about.coord_path, about.lng, about.lat);
+    selectedCoordPaths = [about.coord_path];
   };
 
   var setupCoordPos = function() {
-    coordPos = selectedCoordPaths.map(path => feature.getCoordinate(path));
+    coordPos = selectedCoordPaths.map(coord_path => feature.getCoordinate(coord_path));
     numCoords = coordPos.length;
   };
 
@@ -55,11 +55,11 @@ module.exports = function(ctx, featureId) {
         var latChange = e.lngLat.lat - startPos.lat;
 
         for (var i = 0; i < numCoords; i++) {
-          var path = selectedCoordPaths[i];
+          var coord_path = selectedCoordPaths[i];
           var pos = coordPos[i];
           var lng = pos[0] + lngChange;
           var lat = pos[1] + latChange;
-          feature.updateCoordinate(path, lng, lat);
+          feature.updateCoordinate(coord_path, lng, lat);
         }
       });
       this.on('mouseup', () => true, function() {
@@ -100,9 +100,9 @@ module.exports = function(ctx, featureId) {
             let ring = geojson.geometry.coordinates[i];
             for (let j = 0; j < ring.length - 1; j++) {
               let coord = ring[j];
-              let path = `${i}.${j}`;
+              let coord_path = `${i}.${j}`;
 
-              vertices.push(toVertex(feature.id, coord, path, selectedCoordPaths.indexOf(path) > -1));
+              vertices.push(toVertex(feature.id, coord, coord_path, selectedCoordPaths.indexOf(coord_path) > -1));
 
               if (j > 0) {
                 midpoints.push(toMidpoint(feature.id, vertices[j - 1], vertices[j], ctx.map));
@@ -112,8 +112,8 @@ module.exports = function(ctx, featureId) {
           }
           else {
             let coord = geojson.geometry.coordinates[i];
-            let path = `${i}`;
-            vertices.push(toVertex(feature.id, coord, path, selectedCoordPaths.indexOf(path) > -1));
+            let coord_path = `${i}`;
+            vertices.push(toVertex(feature.id, coord, coord_path, selectedCoordPaths.indexOf(coord_path) > -1));
             if (i > 0) {
               midpoints.push(toMidpoint(feature.id, vertices[i - 1], vertices[i], ctx.map));
             }

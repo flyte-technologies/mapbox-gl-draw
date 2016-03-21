@@ -13,7 +13,7 @@ module.exports = function(parent, startVertex, endVertex, map) {
       parent: parent,
       lng: mid.lng,
       lat: mid.lat,
-      path: endVertex.properties.path
+      coord_path: endVertex.properties.coord_path
     },
     geometry: {
       type: 'Point',
