@@ -68,7 +68,7 @@ module.exports = function(ctx, featureId) {
         numCoords = null;
         startPos = null;
       });
-      this.on('click', (e) => noFeature(e) && selectedCoordPaths.length == 0, function(e) {
+      this.on('click', (e) => noFeature(e) && selectedCoordPaths.length === 0, function(e) {
         e.originalEvent.stopPropagation();
         ctx.events.changeMode('default', [featureId]);
       });
@@ -92,36 +92,30 @@ module.exports = function(ctx, featureId) {
     },
     render: function(geojson) {
       if (featureId === geojson.properties.id) {
-        var midpoints = [];
-        var vertices = [];
+        let midpoints = [];
+        let vertices = [];
         geojson.properties.active = 'true';
-        for (var i = 0; i < geojson.geometry.coordinates.length; i++) {
+        for (let i = 0; i < geojson.geometry.coordinates.length; i++) {
           if (feature.type === 'Polygon') {
-            var ring = geojson.geometry.coordinates[i];
-            for (var j = 0; j < ring.length - 1; j++) {
-              var coord = ring[j];
-              var path = `${i}.${j}`;
+            let ring = geojson.geometry.coordinates[i];
+            for (let j = 0; j < ring.length - 1; j++) {
+              let coord = ring[j];
+              let path = `${i}.${j}`;
 
               vertices.push(toVertex(feature.id, coord, path, selectedCoordPaths.indexOf(path) > -1));
 
               if (j > 0) {
-                var start = vertices[j - 1];
-                var end = vertices[j];
-                midpoints.push(toMidpoint(feature.id, start, end, ctx.map));
+                midpoints.push(toMidpoint(feature.id, vertices[j - 1], vertices[j], ctx.map));
               }
             }
-            var end = vertices[0];
-            var start = vertices[vertices.length-1];
-            midpoints.push(toMidpoint(feature.id, start, end, ctx.map));
+            midpoints.push(toMidpoint(feature.id, vertices[vertices.length - 1], vertices[0], ctx.map));
           }
           else {
-            var coord = geojson.geometry.coordinates[i];
-            var path = `${i}`;
+            let coord = geojson.geometry.coordinates[i];
+            let path = `${i}`;
             vertices.push(toVertex(feature.id, coord, path, selectedCoordPaths.indexOf(path) > -1));
             if (i > 0) {
-              var start = vertices[i - 1];
-              var end = vertices[i];
-              midpoints.push(toMidpoint(feature.id, start, end, ctx.map));
+              midpoints.push(toMidpoint(feature.id, vertices[i - 1], vertices[i], ctx.map));
             }
           }
         }

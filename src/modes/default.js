@@ -24,7 +24,7 @@ module.exports = function(ctx) {
 
   var directSelect = function(e) {
     ctx.api.changeMode('direct_select', e.featureTarget.properties.id);
-  }
+  };
 
   return {
     start: function() {

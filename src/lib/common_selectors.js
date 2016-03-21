@@ -1,4 +1,4 @@
-var Selectors = module.exports = {
+module.exports = {
   isOfMetaType: function(type) {
     return function(e) {
       var featureTarget = e.featureTarget;

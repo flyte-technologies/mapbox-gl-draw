@@ -89,7 +89,7 @@ module.exports = function(ctx) {
     if (isKeyModeValid(event.keyCode)) {
       currentMode.keyup(event);
     }
-  }
+  };
 
   var api = {
     currentModeName: function() {
