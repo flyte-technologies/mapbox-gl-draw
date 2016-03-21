@@ -1,5 +1,5 @@
 module.exports = function() {
-  var isStillAlive = this.ctx.map.getSource('draw') !== undefined;
+  var isStillAlive = this.ctx.map.getSource('draw-hot') !== undefined;
   if (isStillAlive) { // checks to make sure we still have a map
     var mode = this.ctx.events.currentModeName();
     var featureBuckets = Object.keys(this.features).reduce((buckets, id) => {

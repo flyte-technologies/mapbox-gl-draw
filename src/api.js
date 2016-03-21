@@ -63,6 +63,7 @@ module.exports = function(ctx) {
       });
     },
     changeMode: function(mode, opts) {
+      console.log(mode);
       ctx.events.changeMode(mode, opts);
     },
     trash: function() {

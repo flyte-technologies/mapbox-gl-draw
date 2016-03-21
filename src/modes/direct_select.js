@@ -86,23 +86,41 @@ module.exports = function(ctx, featureId) {
       ctx.ui.clearClass();
     },
     render: function(geojson) {
-      geojson.properties.active = featureId === geojson.properties.id ? 'true' : 'false';
       var midpoints = [];
       var vertices = [];
-      for (var i = 0; i < geojson.geometry.coordinates.length; i++) {
-        var ring = geojson.geometry.coordinates[i];
-        for (var j = 0; j < ring.length - 1; j++) {
-          var coord = ring[j];
-          var path = `${i}.${j}`;
+      if (featureId === geojson.properties.id) {
+        console.log('found direct');
+        geojson.properties.active = 'true';
+        for (var i = 0; i < geojson.geometry.coordinates.length; i++) {
+          if (feature.type === 'Polygon') {
+            var ring = geojson.geometry.coordinates[i];
+            for (var j = 0; j < ring.length - 1; j++) {
+              var coord = ring[j];
+              var path = `${i}.${j}`;
 
-          vertices.push(toVertex(feature.id, coord, path, selectedCoordPaths.indexOf(path) > -1));
+              vertices.push(toVertex(feature.id, coord, path, selectedCoordPaths.indexOf(path) > -1));
 
-          if (j > 0) {
-            var start = vertices[j - 1];
-            var end = vertices[j];
-            midpoints.push(toMidpoint(feature.id, start, end, ctx.map));
+              if (j > 0) {
+                var start = vertices[j - 1];
+                var end = vertices[j];
+                midpoints.push(toMidpoint(feature.id, start, end, ctx.map));
+              }
+            }
+          }
+          else {
+            var coord = geojson.geometry.coordinates[i];
+            var path = `${i}`;
+            vertices.push(toVertex(feature.id, coord, path, selectedCoordPaths.indexOf(path) > -1));
+            if (i > 0) {
+              var start = vertices[i - 1];
+              var end = vertices[i];
+              midpoints.push(toMidpoint(feature.id, start, end, ctx.map));
+            }
           }
         }
+      }
+      else {
+        geojson.properties.active = 'false';
       }
       return [geojson].concat(midpoints).concat(vertices);
     }

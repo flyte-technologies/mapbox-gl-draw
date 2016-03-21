@@ -52,7 +52,7 @@ module.exports = function(ctx) {
     addLayers: function() {
       ctx.map.batch((batch) => {
         // drawn features style
-        batch.addSource('draw', {
+        batch.addSource('draw-cold', {
           data: {
             type: 'FeatureCollection',
             features: []
