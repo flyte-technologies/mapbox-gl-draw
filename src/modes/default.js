@@ -40,10 +40,12 @@ module.exports = function(ctx) {
         var isSelected = selectedFeaturesById[id] !== undefined;
 
         if (isSelected && !isShiftDown(e)) {
-          // unselect
           this.on('mouseup', readyForDirectSelect, directSelect);
         }
         else if (isSelected && isShiftDown(e)) {
+          delete selectedFeaturesById[id];
+        }
+        else if (!isSelected && isShiftDown(e)) {
           // add to selected
           selectedFeaturesById[id] = ctx.store.get(id);
         }

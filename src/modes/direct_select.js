@@ -13,7 +13,6 @@ module.exports = function(ctx, featureId) {
 
   var selectedCoordPaths = [];
 
-
   var onVertex = function(e) {
     dragging = true;
     startPos = e.lngLat;
