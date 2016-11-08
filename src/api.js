@@ -1,199 +1,177 @@
-'use strict';
+var isEqual = require('lodash.isequal');
+var normalize = require('geojson-normalize');
+var hat = require('hat');
+var featuresAt = require('./lib/features_at');
+var stringSetsAreEqual = require('./lib/string_sets_are_equal');
+var geojsonhint = require('geojsonhint');
+var Constants = require('./constants');
+var StringSet = require('./lib/string_set');
 
-import Line from './feature_types/line';
-import Point from './feature_types/point';
-import Polygon from './feature_types/polygon';
-import Control from './control';
+var featureTypes = {
+  Polygon: require('./feature_types/polygon'),
+  LineString: require('./feature_types/line_string'),
+  Point: require('./feature_types/point'),
+  MultiPolygon: require('./feature_types/multi_feature'),
+  MultiLineString: require('./feature_types/multi_feature'),
+  MultiPoint: require('./feature_types/multi_feature')
+};
 
-export default class API extends Control {
+module.exports = function(ctx) {
+  const api = {
+    modes: Constants.modes
+  };
 
-  constructor() {
-    super();
-    this.types = {
-      SQUARE: 'square',
-      POLYGON: 'polygon',
-      LINE: 'line',
-      POINT: 'point'
+  api.getFeatureIdsAt = function(point) {
+    var features = featuresAt({ point }, null, ctx);
+    return features.map(feature => feature.properties.id);
+  };
+
+  api.getSelectedIds = function () {
+    return ctx.store.getSelectedIds();
+  };
+
+  api.getSelected = function () {
+    return {
+      type: Constants.geojsonTypes.FEATURE_COLLECTION,
+      features: ctx.store.getSelectedIds().map(id => ctx.store.get(id)).map(feature => feature.toGeoJSON())
     };
-  }
+  };
 
-  /**
-   * add a feature
-   * @param {Object} feature - GeoJSON feature
-   * @param {Object} [options]
-   * @pata {Boolean} [options.permanent=false] - disable selection for feature
-   * @returns {Number} draw id of the set feature or an array of
-   * draw ids if a feature collection was added
-   */
-  add(feature, options) {
-    feature = JSON.parse(JSON.stringify(feature));
-    if (feature.type === 'FeatureCollection') {
-      return feature.features.map(subFeature => this.add(subFeature, options));
+  api.set = function(featureCollection) {
+    if (featureCollection.type === undefined || featureCollection.type !== Constants.geojsonTypes.FEATURE_COLLECTION || !Array.isArray(featureCollection.features)) {
+      throw new Error('Invalid FeatureCollection');
+    }
+    var renderBatch = ctx.store.createRenderBatch();
+    var toDelete = ctx.store.getAllIds().slice();
+    var newIds = api.add(featureCollection);
+    var newIdsLookup = new StringSet(newIds);
+
+    toDelete = toDelete.filter(id => !newIdsLookup.has(id));
+    if (toDelete.length) {
+      api.delete(toDelete);
     }
 
-    if (!feature.geometry) {
-      feature = {
-        type: 'Feature',
-        id: feature.id,
-        geometry: feature
-      };
+    renderBatch();
+    return newIds;
+  };
+
+  api.add = function (geojson) {
+    var errors = geojsonhint.hint(geojson, { precisionWarning: false }).filter(e => e.level !== 'message');
+    if (errors.length) {
+      throw new Error(errors[0].message);
+    }
+    var featureCollection = normalize(geojson);
+    featureCollection = JSON.parse(JSON.stringify(featureCollection));
+
+    var ids = featureCollection.features.map(feature => {
+      feature.id = feature.id || hat();
+
+      if (feature.geometry === null) {
+        throw new Error('Invalid geometry: null');
+      }
+
+      if (ctx.store.get(feature.id) === undefined || ctx.store.get(feature.id).type !== feature.geometry.type) {
+        // If the feature has not yet been created ...
+        var model = featureTypes[feature.geometry.type];
+        if (model === undefined) {
+          throw new Error(`Invalid geometry type: ${feature.geometry.type}.`);
+        }
+        let internalFeature = new model(ctx, feature);
+        ctx.store.add(internalFeature);
+      } else {
+        // If a feature of that id has already been created, and we are swapping it out ...
+        let internalFeature = ctx.store.get(feature.id);
+        internalFeature.properties = feature.properties;
+        if (!isEqual(internalFeature.getCoordinates(), feature.geometry.coordinates)) {
+          internalFeature.incomingCoords(feature.geometry.coordinates);
+        }
+      }
+      return feature.id;
+    });
+
+    ctx.store.render();
+    return ids;
+  };
+
+
+  api.get = function (id) {
+    var feature = ctx.store.get(id);
+    if (feature) {
+      return feature.toGeoJSON();
+    }
+  };
+
+  api.getAll = function() {
+    return {
+      type: Constants.geojsonTypes.FEATURE_COLLECTION,
+      features: ctx.store.getAll().map(feature => feature.toGeoJSON())
+    };
+  };
+
+  api.delete = function(featureIds) {
+    ctx.store.delete(featureIds, { silent: true });
+    // If we were in direct select mode and our selected feature no longer exists
+    // (because it was deleted), we need to get out of that mode.
+    if (api.getMode() === Constants.modes.DIRECT_SELECT && !ctx.store.getSelectedIds().length) {
+      ctx.events.changeMode(Constants.modes.SIMPLE_SELECT, undefined, { silent: true });
+    } else {
+      ctx.store.render();
     }
 
-    if (!options) {
-      options = {};
-    }
-    options.map = this._map;
-    options.data = feature;
+    return api;
+  };
 
-    var internalFeature;
-    switch (feature.geometry.type) {
-      case 'Point':
-        internalFeature = new Point(options);
-        break;
-      case 'LineString':
-        internalFeature = new Line(options);
-        break;
-      case 'Polygon':
-        internalFeature = new Polygon(options);
-        break;
-      default:
-        throw new Error('MapboxGL Draw: Unsupported geometry type "' + feature.geometry.type + '"');
+  api.deleteAll = function() {
+    ctx.store.delete(ctx.store.getAllIds(), { silent: true });
+    // If we were in direct select mode, now our selected feature no longer exists,
+    // so escape that mode.
+    if (api.getMode() === Constants.modes.DIRECT_SELECT) {
+      ctx.events.changeMode(Constants.modes.SIMPLE_SELECT, undefined, { silent: true });
+    } else {
+      ctx.store.render();
     }
 
-    internalFeature.ready = true;
-    internalFeature.created = true;
+    return api;
+  };
 
-    var id = this._store.set(internalFeature);
-    this._store._features[id].commited = true;
-    if (this.options.interactive) {
-      this.select(internalFeature.drawId);
+  api.changeMode = function(mode, modeOptions = {}) {
+    // Avoid changing modes just to re-select what's already selected
+    if (mode === Constants.modes.SIMPLE_SELECT && api.getMode() === Constants.modes.SIMPLE_SELECT) {
+      if (stringSetsAreEqual((modeOptions.featureIds || []), ctx.store.getSelectedIds())) return api;
+      // And if we are changing the selection within simple_select mode, just change the selection,
+      // instead of stopping and re-starting the mode
+      ctx.store.setSelected(modeOptions.featureIds, { silent: true });
+      ctx.store.render();
+      return api;
     }
 
-    return internalFeature.drawId;
-  }
-
-  /**
-   * Updates an existing feature
-   * @param {String} id - the drawId of the feature to update
-   * @param {Object} feature - a GeoJSON feature
-   * @returns {Draw} this
-   */
-  update(id, feature) {
-    feature = JSON.parse(JSON.stringify(feature));
-    var _feature = this._store.get(id);
-    _feature.setCoordinates(feature.coordinates || feature.geometry.coordinates);
-    if (feature.properties) _feature.setProperties(feature.properties);
-    this._store._render();
-    return this;
-  }
-
-  /**
-   * get a geometry by its draw id
-   * @param {String} id - the draw id of the geometry
-   */
-  get(id) {
-    var feature = this._store.get(id);
-    return feature && feature.toGeoJSON();
-  }
-
-  /**
-   * get all draw features
-   * @returns {Object} a GeoJSON feature collection
-   */
-  getAll() {
-    return this._store.getAllIds()
-      .map(id => this._store.get(id).toGeoJSON())
-      .reduce(function(featureCollection, feature) {
-        featureCollection.features.push(feature);
-        return featureCollection;
-      }, {
-        type: 'FeatureCollection',
-        features: []
-      });
-  }
-
-  startDrawing() {
-    return null;
-  }
-
-  /**
-   * select a feature
-   * @param {String} id - the drawId of the feature
-   * @returns {Draw} this
-   */
-  select(id) {
-    if (this._store.get(id).options.permanent !== true) {
-      this._store.select(id);
+    if (mode === Constants.modes.DIRECT_SELECT && api.getMode() === Constants.modes.DIRECT_SELECT
+      && modeOptions.featureId === ctx.store.getSelectedIds()[0]) {
+      return api;
     }
-    return this;
-  }
 
-  /**
-   * select all features
-   * @param {String} id - the drawId of the feature
-   * @returns {Draw} this
-   */
-  selectAll() {
-    this._store.getAllIds()
-      .filter(id => this._store.get(id).options.permanent !== true)
-      .forEach(id => this.select(id));
-    return this;
-  }
+    ctx.events.changeMode(mode, modeOptions, { silent: true });
+    return api;
+  };
 
-  /**
-   * deselect a feature
-   * @param {String} id - the drawId of the feature
-   * @returns {Draw} this
-   */
-  deselect(id) {
-    this._store.commit(id);
-    return this;
-  }
+  api.getMode = function() {
+    return ctx.events.getMode();
+  };
 
-  /**
-   * deselect all features
-   * @param {String} id - the drawId of the feature
-   * @returns {Draw} this
-   */
-  deselectAll() {
-    this._store.getSelectedIds()
-      .forEach(id => this.commit(id));
-    return this;
-  }
+  api.trash = function() {
+    ctx.events.trash({ silent: true });
+    return api;
+  };
 
-  /**
-   * get selected feature collection of features
-   * @return {Object} a feature collection of features that are selected
-   */
-  getSelected() {
-    return this._store.getSelectedIds()
-      .map(id => this._store.get(id).toGeoJSON())
-      .reduce(function(featureCollection, feature) {
-        featureCollection.features.push(feature);
-        return featureCollection;
-      }, {
-        type: 'FeatureCollection',
-        features: []
-      });
-  }
+  api.combineFeatures = function() {
+    ctx.events.combineFeatures({ silent: true });
+    return api;
+  };
 
-  /**
-   * remove a geometry by its draw id
-   * @param {String} id - the drawid of the geometry
-   * @returns {Draw} this
-   */
-  destroy(id) {
-    this._store.delete(id);
-    return this;
-  }
+  api.uncombineFeatures = function() {
+    ctx.events.uncombineFeatures({ silent: true });
+    return api;
+  };
 
-  /**
-   * remove all features
-   * @returns {Draw} this
-   */
-  clear() {
-    this._store.deleteAll();
-    return this;
-  }
-
-}
+  return api;
+};

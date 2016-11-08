@@ -1,221 +1,237 @@
-'use strict';
+var throttle = require('./lib/throttle');
+var toDenseArray = require('./lib/to_dense_array');
+var StringSet = require('./lib/string_set');
+var render = require('./render');
 
-import createMidpoints from './lib/create_midpoints';
-import createVertices from './lib/create_vertices';
-import {throttle} from './util';
+var Store = module.exports = function(ctx) {
+  this._features = {};
+  this._featureIds = new StringSet();
+  this._selectedFeatureIds = new StringSet();
+  this._changedFeatureIds = new StringSet();
+  this._deletedFeaturesToEmit = [];
+  this._emitSelectionChange = false;
+  this.ctx = ctx;
+  this.sources = {
+    hot: [],
+    cold: []
+  };
+  this.render = throttle(render, 16, this);
+  this.isDirty = false;
+};
+
 
 /**
- * A store for keeping track of versions of drawings
- *
- * @param {Array<Object>} data An array of GeoJSON object
- * @returns {Store} this
+ * Delays all rendering until the returned function is invoked
+ * @return {Function} renderBatch
  */
-export default class Store {
+Store.prototype.createRenderBatch = function() {
+  let holdRender = this.render;
+  let numRenders = 0;
+  this.render = function() {
+    numRenders++;
+  };
 
-  constructor(map, draw) {
-    this._map = map;
-    this._draw = draw;
-    this._features = {};
-    this._render = throttle(this.render, 16, this);
-  }
-
-  /**
-   * add a feature
-   *
-   * @param {Object} feature - GeoJSON feature
-   */
-  set(feature) {
-    this._features[feature.drawId] = feature;
-    this._render();
-    return feature.drawId;
-  }
-
-  /**
-   * get a feature
-   *
-   * @param {string} id - draw id
-   */
-
-  get(id) {
-    return this._features[id];
-  }
-
-  /**
-   * get a list of ids for all features
-   */
-
-  getAllIds() {
-    return Object.keys(this._features);
-  }
-
-  /**
-   * get a list of ids currently being selected
-   */
-
-  getSelectedIds() {
-    return Object.keys(this._features).filter(id => this._features[id].selected === true);
-  }
-
-  /**
-   * delete a feature
-   *
-   * @param {String} id - feature id
-   */
-  delete(id) {
-    if (this._features[id]) {
-      var geojson = this._features[id].created ? this._features[id].toGeoJSON() : null;
-      delete this._features[id];
-      if (geojson) {
-        this._map.fire('draw.delete', {
-          id: id,
-          geojson: geojson
-        });
-      }
-      this._render();
+  return () => {
+    this.render = holdRender;
+    if (numRenders > 0) {
+      this.render();
     }
-  }
+  };
+};
 
-  /**
-   * removes all selected features from the store
-   */
-  clearSelected() {
-    this.getSelectedIds().forEach(id => {
-      if(this.get(id).created === false) {
-        this.get(id).onStopDrawing({});
-      }
-      this.delete(id);
-    });
-  }
+/**
+ * Sets the store's state to dirty.
+ * @return {Store} this
+ */
+Store.prototype.setDirty = function() {
+  this.isDirty = true;
+  return this;
+};
 
-   /**
-   * remove all features from the store
-   */
-  deleteAll() {
-    Object.keys(this._features).forEach(id => {
-      this.delete(id);
-    });
-  }
+/**
+ * Sets a feature's state to changed.
+ * @param {string} featureId
+ * @return {Store} this
+ */
+Store.prototype.featureChanged = function(featureId) {
+  this._changedFeatureIds.add(featureId);
+  return this;
+};
 
-  /**
-   * revert all features from the store
-   */
-  revertSelected() {
-    this.getSelectedIds().forEach(id => {
-      this.get(id).revert();
-      this.get(id).deselect();
-    });
-    this.render();
-  }
+/**
+ * Gets the ids of all features currently in changed state.
+ * @return {Store} this
+ */
+Store.prototype.getChangedIds = function() {
+  return this._changedFeatureIds.values();
+};
 
-  /**
-   * select a feature
-   *
-   * @param {String} id - the drawId of a feature
-   */
-  select(id) {
-    if (this._features[id] && !this._features[id].selected) {
-      this._features[id].select();
-      this._render();
-      if (this._features[id].commited && this._features[id].ready) {
-        this._map.fire('draw.select.start', {
-          id: id,
-          geojson: this._features[id].toGeoJSON()
-        });
+/**
+ * Sets all features to unchanged state.
+ * @return {Store} this
+ */
+Store.prototype.clearChangedIds = function() {
+  this._changedFeatureIds.clear();
+  return this;
+};
+
+/**
+ * Gets the ids of all features in the store.
+ * @return {Store} this
+ */
+Store.prototype.getAllIds = function() {
+  return this._featureIds.values();
+};
+
+/**
+ * Adds a feature to the store.
+ * @param {Object} feature
+ *
+ * @return {Store} this
+ */
+Store.prototype.add = function(feature) {
+  this.featureChanged(feature.id);
+  this._features[feature.id] = feature;
+  this._featureIds.add(feature.id);
+  return this;
+};
+
+/**
+ * Deletes a feature or array of features from the store.
+ * Cleans up after the deletion by deselecting the features.
+ * If changes were made, sets the state to the dirty
+ * and fires an event.
+ * @param {string | Array<string>} featureIds
+ * @param {Object} [options]
+ * @param {Object} [options.silent] - If `true`, this invocation will not fire an event.
+ * @return {Store} this
+ */
+Store.prototype.delete = function(featureIds, options = {}) {
+  toDenseArray(featureIds).forEach(id => {
+    if (!this._featureIds.has(id)) return;
+    this._featureIds.delete(id);
+    this._selectedFeatureIds.delete(id);
+    if (!options.silent) {
+      if (this._deletedFeaturesToEmit.indexOf(this._features[id]) === -1) {
+        this._deletedFeaturesToEmit.push(this._features[id]);
       }
     }
-  }
+    delete this._features[id];
+    this.isDirty = true;
+  });
+  return this;
+};
 
-  /**
-   * commit changes to a feature and deselect
-   *
-   * @param {String} id - the drawId of a feature
-   */
-  commit(id) {
-    if (this._features[id] && this._features[id].selected) {
-      this._features[id].deselect();
-      this._render();
-      if (this._features[id].commited) {
-        this._map.fire('draw.select.end', {
-          id: id,
-          geojson: this._features[id].toGeoJSON()
-        });
-      }
-      else {
-        this._features[id].commited = true;
-      }
-      // TODO: make this emit only if there was a change
-      this._map.fire('draw.set', {
-        id: id,
-        geojson: this._features[id].toGeoJSON()
-      });
+/**
+ * Returns a feature in the store matching the specified value.
+ * @return {Object | undefined} feature
+ */
+Store.prototype.get = function(id) {
+  return this._features[id];
+};
+
+/**
+ * Returns all features in the store.
+ * @return {Array<Object>}
+ */
+Store.prototype.getAll = function() {
+  return Object.keys(this._features).map(id => this._features[id]);
+};
+
+/**
+ * Adds features to the current selection.
+ * @param {string | Array<string>} featureIds
+ * @param {Object} [options]
+ * @param {Object} [options.silent] - If `true`, this invocation will not fire an event.
+ * @return {Store} this
+ */
+Store.prototype.select = function(featureIds, options = {}) {
+  toDenseArray(featureIds).forEach(id => {
+    if (this._selectedFeatureIds.has(id)) return;
+    this._selectedFeatureIds.add(id);
+    this._changedFeatureIds.add(id);
+    if (!options.silent) {
+      this._emitSelectionChange = true;
     }
-  }
+  });
+  return this;
+};
 
-  isSelected() {
-    return Object.keys(this._features).some(id => this._features[id].selected === true);
-  }
-
-  /**
-   * @param {Object} p1 - the pixel coordinates of the first point
-   * @param {Object} p2 - the pixel coordinates of the second point
-   */
-  selectFeaturesIn(p1, p2) {
-    var xMin = p1.x < p2.x ? p1.x : p2.x;
-    var yMin = p1.y < p2.y ? p1.y : p2.y;
-    var xMax = p1.x > p2.x ? p1.x : p2.x;
-    var yMax = p1.y > p2.y ? p1.y : p2.y;
-    var bbox = [ [xMin, yMin], [xMax, yMax] ];
-    var drawLayers = [ 'gl-draw-polygon', 'gl-draw-line', 'gl-draw-point' ];
-    this._map.featuresIn(bbox, { layers: drawLayers, type: 'vector' }, (err, features) => {
-      if (err) throw err;
-      // featuresIn can return the same feature multiple times
-      // handle this with a reduce
-      features.reduce((set, feature) => {
-        var id = feature.properties.drawId;
-        if (this._features[id] && set[id] === undefined) {
-          set[id] = 1;
-          this.select(id);
-        }
-        return set;
-      }, {});
-    });
-  }
-
-  render() {
-    var isStillAlive = this._map.getSource('draw') !== undefined;
-    if (isStillAlive) { // checks to make sure we still have a map
-      var featureBuckets = Object.keys(this._features).reduce((buckets, id) => {
-        if (this._features[id].ready) {
-          let geojson = this._features[id].toGeoJSON();
-          geojson.properties.drawId = id;
-
-          if (this._features[id].selected === true) {
-            buckets.selected.push(geojson);
-            buckets.selected = buckets.selected.concat(createMidpoints([this._features[id]], this._map), createVertices([this._features[id]]));
-          }
-          else {
-            buckets.deselected.push(geojson);
-          }
-        }
-        return buckets;
-      }, { deselected: [], selected: [] });
-
-      if(featureBuckets.selected.length > 0) {
-        this._draw._showDeleteButton();
-      }
-      else {
-        this._draw._hideDeleteButton();
-      }
-
-      this._map.getSource('draw').setData({
-        type: 'FeatureCollection',
-        features: featureBuckets.deselected
-      });
-
-      this._map.getSource('draw-selected').setData({
-        type: 'FeatureCollection',
-        features: featureBuckets.selected
-      });
+/**
+ * Deletes features from the current selection.
+ * @param {string | Array<string>} featureIds
+ * @param {Object} [options]
+ * @param {Object} [options.silent] - If `true`, this invocation will not fire an event.
+ * @return {Store} this
+ */
+Store.prototype.deselect = function(featureIds, options = {}) {
+  toDenseArray(featureIds).forEach(id => {
+    if (!this._selectedFeatureIds.has(id)) return;
+    this._selectedFeatureIds.delete(id);
+    this._changedFeatureIds.add(id);
+    if (!options.silent) {
+      this._emitSelectionChange = true;
     }
-  }
-}
+  });
+  return this;
+};
+
+/**
+ * Clears the current selection.
+ * @param {Object} [options]
+ * @param {Object} [options.silent] - If `true`, this invocation will not fire an event.
+ * @return {Store} this
+ */
+Store.prototype.clearSelected = function(options = {}) {
+  this.deselect(this._selectedFeatureIds.values(), { silent: options.silent });
+  return this;
+};
+
+/**
+ * Sets the store's selection, clearing any prior values.
+ * If no feature ids are passed, the store is just cleared.
+ * @param {string | Array<string> | undefined} featureIds
+ * @param {Object} [options]
+ * @param {Object} [options.silent] - If `true`, this invocation will not fire an event.
+ * @return {Store} this
+ */
+Store.prototype.setSelected = function(featureIds, options = {}) {
+  featureIds = toDenseArray(featureIds);
+
+  // Deselect any features not in the new selection
+  this.deselect(this._selectedFeatureIds.values().filter(id => {
+    return featureIds.indexOf(id) === -1;
+  }), { silent: options.silent });
+
+  // Select any features in the new selection that were not already selected
+  this.select(featureIds.filter(id => {
+    return !this._selectedFeatureIds.has(id);
+  }), { silent: options.silent });
+
+  return this;
+};
+
+/**
+ * Returns the ids of features in the current selection.
+ * @return {Array<string>} Selected feature ids.
+ */
+Store.prototype.getSelectedIds = function() {
+  return this._selectedFeatureIds.values();
+};
+
+/**
+ * Returns features in the current selection.
+ * @return {Array<Object>} Selected features.
+ */
+Store.prototype.getSelected = function() {
+  return this._selectedFeatureIds.values().map(id => this.get(id));
+};
+
+/**
+ * Indicates whether a feature is selected.
+ * @param {string} featureId
+ * @return {boolean} `true` if the feature is selected, `false` if not.
+ */
+Store.prototype.isSelected = function(featureId) {
+  return this._selectedFeatureIds.has(featureId);
+};
